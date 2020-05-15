@@ -1,0 +1,751 @@
+/**
+ *<pre>
+ * Project Name : MAL_A
+ * Package Name : com.mala.landmark
+ * Class Name : LandmarkDao.java
+ * Description : 관광명소 CRUD
+ * Modification Information
+ * 
+ *   수정일                 수정자               수정내용
+ *  ----------   ---------   -------------------------------
+ *  2020-02-06    sist        최초생성
+ *
+ * @author 쌍용교육센터 E반 2조 MAL_A
+ * @since 2020-02-06 오후 5:29:08
+ * @version 1.0
+ * 
+ *
+ *  Copyright (C) by H.R. KIM All right reserved.
+ * </pre>
+ */
+package com.mal_a.landmark;
+
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.util.ArrayList;
+import java.util.List;
+
+import org.apache.log4j.Logger;
+
+import com.mal_a.cmn.ConnectionMaker;
+import com.mal_a.cmn.DTO;
+import com.mal_a.cmn.JDBCResClose;
+import com.mal_a.cmn.SearchVO;
+import com.mal_a.cmn.WorkDiv;
+import com.mal_a.filemng.FileMngDao;
+import com.mal_a.filemng.FileMngVO;
+import com.mal_a.landmark.LandmarkVO;
+/**
+ * @author sist
+ *
+ */
+public class LandmarkDao extends WorkDiv{
+	private final Logger LOG = Logger.getLogger(LandmarkDao.class);
+	private ConnectionMaker connectionMaker;
+	private FileMngDao fileMngDao;
+	
+	public LandmarkDao() {
+		connectionMaker = new ConnectionMaker();
+		fileMngDao = new FileMngDao();
+	}
+		
+	/**
+	 * 
+	*@Method Name:doInsert
+	*@작성일: 2020. 2. 18.
+	*@작성자: sist
+	*@설명: 관광명소 등록
+	*@param scRNO void
+	*@return int
+	 */
+	@Override
+	public int doInsert(DTO dto) {
+	      int flag = 0;
+	      Connection connection = connectionMaker.getConnection();
+	   
+	       //query 수행을 위한 PreparedStatement 구함   
+	       StringBuilder sb = new StringBuilder();
+	       sb.append("INSERT INTO landmark(lno,name,addrno,addr,tel,cont,category,regid,fileid)		   \n");
+	       sb.append(" VALUES(                                                                         \n");
+	       sb.append("      ?||'_'||LANDMARK_LNO.NEXTVAL||'_L'                                         \n");//landmark_SEQ.NEXTVAL  lno
+	       sb.append("      ,?                                                                         \n");//Name   
+	       sb.append("      ,?                                                                         \n");//AddrNo   
+	       sb.append("      ,?                                                                         \n");//Addr
+	       sb.append("      ,?                                                                         \n");//Tel   
+	       sb.append("      ,?                                                                         \n");//Cont 
+	       sb.append("      ,?                                                                         \n");//category
+	       sb.append("      ,?                                                                         \n");//regid   
+	       sb.append("      ,?                                                                         \n");//fileid_SEQ.NEXTVAL 
+	       sb.append(")                                                                                \n");
+
+	             
+	      PreparedStatement pstmt= null;
+
+	      LandmarkVO inVO = (LandmarkVO) dto;
+	             
+	             
+	             
+	   try {
+	      LOG.debug("2.sql =\n"+sb.toString());
+	      LOG.debug("2.1 param =\n"+inVO);
+	      
+	      pstmt = connection.prepareStatement(sb.toString());
+	      LOG.debug("3.pstmt = "+pstmt);
+	      
+	      //query 실행
+	      //1.lno
+	      //2.name  
+	      //3.addrno 
+	      //4.addr 
+	      //5.tel   
+	      //6.cont 
+	      //7.category
+	      //8.regid
+	      //9.fileId
+	      pstmt.setString(1,inVO.getLno());
+	      pstmt.setString(2,inVO.getName());
+	      pstmt.setString(3,inVO.getAddrNo());
+	      pstmt.setString(4,inVO.getAddr());
+	      pstmt.setString(5,inVO.getTel());
+	      pstmt.setString(6,inVO.getCont());
+	      pstmt.setString(7,inVO.getCategory());
+	      pstmt.setString(8,inVO.getRegId());
+	      pstmt.setString(9, inVO.getFileId());
+	      
+	      
+	      //4.2. query 수행
+	      flag = pstmt.executeUpdate();
+	      LOG.debug("4.flag"+flag);
+	      
+	   } catch (SQLException e) {
+	      LOG.debug("========================");
+	       LOG.debug("SQLException="+e.getMessage());
+	       LOG.debug("========================");
+	      e.printStackTrace();
+	   //PreparedStatement,ResultSet 종료   
+	   //Connection 종료   
+	   }finally {
+	      JDBCResClose.close(pstmt);       
+	      JDBCResClose.close(connection); 
+	               }         
+	      return flag;      
+	   }
+
+
+	/**
+	 * 
+	 *@Method Name:doSelectOne
+	 *@작성일: 2020. 2. 4.
+	 *@작성자: sist
+	 *@설명: 관광명소 단건조회
+	 *@param dto
+	 *@return dto
+	 */
+	@Override
+	public DTO doSelectOne(DTO dto) {
+		LandmarkVO inVO = (LandmarkVO) dto;	
+		LandmarkVO outVO = null;			
+		Connection connection = null;	
+		PreparedStatement pstmt = null; 
+		ResultSet rs = null;
+		
+		try {
+			//1.Connection
+			connection = this.connectionMaker.getConnection();
+			LOG.debug("1.Connection: "+connection);
+			
+			//2.PreparedStatement
+			//2.1.SQL
+			StringBuilder sb = new StringBuilder();
+			sb.append("SELECT lno                           \n");
+			sb.append("	  ,name                             \n");
+			sb.append("	  ,addrno                           \n");
+			sb.append("	  ,addr                             \n");
+			sb.append("	  ,tel                              \n");
+			sb.append("	  ,cont                             \n");
+			sb.append("	  ,category                         \n");
+			sb.append("	  ,regid                            \n");
+			sb.append("	  ,TO_CHAR(regdt,'YYYY/MM/DD') regdt\n"); 
+			sb.append("	  ,modid                            \n");
+			sb.append("	  ,TO_CHAR(moddt,'YYYY/MM/DD') moddt\n");
+			sb.append("	  ,fileid                           \n");
+			sb.append("FROM landmark                        \n"); 
+			sb.append("WHERE lno=?					        \n");
+			
+			pstmt = connection.prepareStatement(sb.toString());
+			LOG.debug("2.PreparedStatement: "+pstmt);
+			LOG.debug("2.1.SQL:\n"+sb.toString());
+			
+			//3.Param
+			LOG.debug("3.Param: "+inVO);
+			pstmt.setString(1, inVO.getLno());
+			
+			//4.Query 수행
+			rs = pstmt.executeQuery();
+			if(rs.next()) {
+				//Data 1건을 outVO에 담기
+				outVO = new LandmarkVO();
+				outVO.setLno(rs.getString("lno"));
+				outVO.setName(rs.getString("name"));
+				outVO.setAddrNo(rs.getString("addrno"));
+				outVO.setAddr(rs.getString("addr"));
+				outVO.setTel(rs.getString("tel"));
+				outVO.setCont(rs.getString("cont"));
+				outVO.setCategory(rs.getString("category"));
+				outVO.setRegId(rs.getString("regid"));
+				outVO.setRegDt(rs.getString("regdt"));
+				outVO.setModId(rs.getString("modid"));
+				outVO.setModDt(rs.getString("moddt"));
+				outVO.setFileId(rs.getString("fileid"));
+				
+				LOG.debug("4.Return: "+outVO);
+			}
+			
+		}catch(SQLException e) {
+			LOG.debug("======================================");
+			LOG.debug("SQLException="+e.getMessage());
+			LOG.debug("======================================");
+			e.printStackTrace();
+			
+		}finally{
+			JDBCResClose.close(rs);
+			JDBCResClose.close(pstmt);
+			JDBCResClose.close(connection);
+		}
+		return outVO;		
+	}
+	
+	
+	@Override
+	public List<?> doRetrieve(DTO dto) {
+		return null;
+	}
+	
+	/**
+	 * 
+	 *메서드명 : doRetrieveAdmin
+	 *작성일 : 2020. 2. 23.
+	 *작성자 : LG
+	 *설명 : 웹관리자용 다건조회 
+	 *@param dto
+	 *@return List<?>
+	 */
+	public List<?> doRetrieveAdmin(DTO dto) {
+		SearchVO inVO =(SearchVO)dto;
+		List<List> outList = new ArrayList<List>();
+		
+		Connection connection=null;		
+		PreparedStatement pstmt=null;
+		ResultSet rs=null;
+		
+		StringBuilder sbWhere = new StringBuilder();	//검색조건
+		StringBuilder sb = new StringBuilder();			//검색query
+		
+		//검색구분 : 1(웹관리자용 지역별), 2(웹관리자용 카테고리별), 3(웹관리자용 지역별 + 카테고리별),4(전체조회)
+		if(inVO.getSearchDiv()!=null|| !inVO.getSearchDiv().equals("")) {
+			if("1".equals(inVO.getSearchDiv())) {
+				//웹관리자용 지역별
+				sbWhere.append("WHERE SUBSTR(l.lno,1,INSTR(l.lno,'_')-1) =?   \n");
+			}else if("2".equals(inVO.getSearchDiv())) {
+				//웹관리자용 카테고리별
+				sbWhere.append("WHERE l.category =?	 						  \n");
+			}else if("3".equals(inVO.getSearchDiv())) {
+				//웹관리자용 지역별 + 카테고리별
+				sbWhere.append("WHERE SUBSTR(l.lno,1,INSTR(l.lno,'_')-1) =?	  \n");
+				sbWhere.append("AND l.category = ?							  \n");
+				LOG.debug("웹관리자용 지역별 + 카테고리 넘어온드아아아아아앙ㅇㅇㅇㅇㅇㅇㅇㅇㅇㅇㅇㅇㅇㅇㅇㅇㅇㅇㅇㅇㅇㅇㅇㅇㅇㅇ");
+			}else if("4".equals(inVO.getSearchDiv())) {
+				
+			}
+		}
+		
+		//main query
+		   
+		sb.append("SELECT *                                                                                		\n");
+		sb.append("FROM(                                                                                   		\n");
+		sb.append("    SELECT rnum num                                                                     		\n");
+		sb.append("          ,b.*                                                                          		\n");
+		sb.append("    FROM(                                                                               		\n");
+		sb.append("        SELECT ROWNUM as rnum                                                           		\n");
+		sb.append("              ,a.*                                                                      		\n");
+		sb.append("        FROM(                                                                           		\n");
+		sb.append("            SELECT l.lno      lno                                                            \n");     
+		sb.append("                  ,l.name     name                                                           \n");    
+		sb.append("                  ,l.addrno   addrno                                                         \n");  
+		sb.append("                  ,l.addr     addr                                                           \n");    
+		sb.append("                  ,l.tel      tel                                                            \n");     
+		sb.append("                  ,l.cont     cont                                                           \n");    
+		sb.append("                  ,l.regid    regid                                                          \n");   
+		sb.append("                  ,l.regdt    regdt                                                          \n");   
+		sb.append("                  ,l.modid    modid                                                          \n");   
+		sb.append("                  ,l.moddt    moddt                                                          \n");   
+		sb.append("                  ,l.fileid   fileid                                                         \n");
+		sb.append("                  ,get_code('CATEGORY',l.category)  category                                 \n");
+		sb.append("            FROM landmark l                                                    				\n");
+		//----------------------------------------------------------------------------------------------------------
+		if(inVO.getSearchDiv()!=null || !inVO.getSearchDiv().equals("")) {
+		      if(inVO.getSearchWord()!=null) {
+		         sb.append(sbWhere.toString());
+		      }
+						   }
+		//----------------------------------------------------------------------------------------------------------
+		sb.append("            )a                                                                       		\n");
+		sb.append("        WHERE rownum<=(?*(?-1)+?)                                                       		\n");
+		sb.append("        )b                                                                              		\n");
+		sb.append("    WHERE rnum>=(?*(?-1)+1)                                                             		\n");
+		sb.append(")                                                                                       		\n");
+		sb.append("CROSS JOIN                                                                              		\n");
+		sb.append("(SELECT COUNT(*) total                                                                  		\n");
+		sb.append("  FROM landmark l                                                                        	\n");
+		//----------------------------------------------------------------------------------------------------------
+		if(inVO.getSearchDiv()!=null || !inVO.getSearchDiv().equals("")) {
+		      if(inVO.getSearchWord()!=null) {
+		         sb.append(sbWhere.toString());
+		      }
+		   }
+		//----------------------------------------------------------------------------------------------------------
+		sb.append("		)																						\n");    
+
+		
+		
+		try {
+			//1.Connection
+			connection = this.connectionMaker.getConnection();
+			LOG.debug("1.Connection = "+connection);
+			
+			//2.pstmt
+			//2.1. 
+			LOG.debug("2.pstmt\n = "+sb.toString());
+			pstmt = connection.prepareStatement(sb.toString());
+			LOG.debug("2.pstmt = "+pstmt);
+			LOG.debug("3.param = "+inVO);
+						
+			
+			//검색어 있는 경우
+			
+			if(inVO.getSearchDiv().equals("1") &&inVO.getSearchWord()!=null) {
+				//1.지역번호
+				//2.PAGE_SIZE
+				//3.PAGE_NUM
+				//4.PAGE_SIZE
+				//5.PAGE_SIZE
+				//6.PAGE_NUM
+				//7.지역번호
+				pstmt.setString(1, inVO.getSearchWord());
+				pstmt.setInt(2, inVO.getPageSize());
+				pstmt.setInt(3, inVO.getPageNum());
+				pstmt.setInt(4, inVO.getPageSize());
+				pstmt.setInt(5, inVO.getPageSize());
+				pstmt.setInt(6, inVO.getPageNum());
+				pstmt.setString(7, inVO.getSearchWord());
+				
+				
+			}else if(inVO.getSearchDiv().equals("2") && inVO.getSearchWord()!=null) {
+				//1.카테고리
+				//2.PAGE_SIZE
+				//3.PAGE_NUM
+				//4.PAGE_SIZE
+				//5.PAGE_SIZE
+				//6.PAGE_NUM
+				//7.카테고리
+				pstmt.setString(1, inVO.getSearchWord());
+				pstmt.setInt(2, inVO.getPageSize());
+				pstmt.setInt(3, inVO.getPageNum());
+				pstmt.setInt(4, inVO.getPageSize());
+				pstmt.setInt(5, inVO.getPageSize());
+				pstmt.setInt(6, inVO.getPageNum());
+				pstmt.setString(7, inVO.getSearchWord());
+				
+			}else if(inVO.getSearchDiv().equals("3") && inVO.getSearchWord() != null && inVO.getSearchWord02() != null) {
+				//1.지역번호
+				//2.카테고리
+				//3.PAGE_SIZE
+				//4.PAGE_NUM
+				//5.PAGE_SIZE
+				//6.PAGE_SIZE
+				//7.PAGE_NUM
+				//8.지역번호
+				//9.카테고리
+				pstmt.setString(1, inVO.getSearchWord());
+				pstmt.setString(2, inVO.getSearchWord02());
+				pstmt.setInt(3, inVO.getPageSize());
+				pstmt.setInt(4, inVO.getPageNum());
+				pstmt.setInt(5, inVO.getPageSize());
+				pstmt.setInt(6, inVO.getPageSize());
+				pstmt.setInt(7, inVO.getPageNum());
+				pstmt.setString(8, inVO.getSearchWord());
+				pstmt.setString(9, inVO.getSearchWord02());
+				LOG.debug("########################################3333333");
+				LOG.debug("inVO.getSearchWord():"+inVO.getSearchWord());
+				LOG.debug("inVO.getSearchWord02():"+inVO.getSearchWord02());
+				LOG.debug("########################################3333333");
+			}else if(inVO.getSearchDiv().equals("4")) {
+				//1.PAGE_SIZE
+				//2.PAGE_NUM
+				//3.PAGE_SIZE
+				//4.PAGE_SIZE
+				//5.PAGE_NUM
+				pstmt.setInt(1, inVO.getPageSize());
+				pstmt.setInt(2, inVO.getPageNum());
+				pstmt.setInt(3, inVO.getPageSize());
+				pstmt.setInt(4, inVO.getPageSize());
+				pstmt.setInt(5, inVO.getPageNum());
+			}
+			
+
+			//4.query 수행
+			rs = pstmt.executeQuery();
+
+			while(rs.next()) {
+					//Data 1건을 outVO에 담기
+					LandmarkVO outVO = new LandmarkVO();
+					outVO.setLno(rs.getString("lno"));
+					outVO.setName(rs.getString("name"));
+					outVO.setAddrNo(rs.getString("addrno"));
+					outVO.setAddr(rs.getString("addr"));
+					outVO.setTel(rs.getString("tel"));
+					outVO.setCont(rs.getString("cont"));
+					outVO.setCategory(rs.getString("category"));
+					outVO.setRegId(rs.getString("regid"));
+					outVO.setRegDt(rs.getString("regdt"));
+					outVO.setModId(rs.getString("modid"));
+					outVO.setModDt(rs.getString("moddt"));
+					outVO.setFileId(rs.getString("fileid"));
+					outVO.setTotal(rs.getInt("total"));
+					
+					List<LandmarkVO> outListLandMarkVO = new ArrayList<LandmarkVO>();
+					outListLandMarkVO.add(outVO);
+					
+					FileMngVO inFileMngVO = new FileMngVO();
+					inFileMngVO.setFileId(outVO.getFileId());
+					LOG.debug("inFileMngVO: "+inFileMngVO);
+					
+					List<FileMngVO> outListFileMngVO = (List<FileMngVO>) fileMngDao.doRetrieve(inFileMngVO);
+					
+					List<List> miniOutList = new ArrayList<List>();
+					
+					miniOutList.add(outListLandMarkVO);
+					miniOutList.add(outListFileMngVO);
+					
+					outList.add(miniOutList);
+					LOG.debug("################################################");
+					LOG.debug("outVO====="+outVO);
+					LOG.debug("################################################");
+			}
+				LOG.debug("4.Return: "+outList);
+			
+			
+		}catch(SQLException e) {
+			LOG.debug("=====================");
+			LOG.debug("SQLException= "+e.getMessage());
+			LOG.debug("=====================");
+			e.printStackTrace();
+			
+		}finally {
+			JDBCResClose.close(rs);
+			JDBCResClose.close(pstmt);
+			JDBCResClose.close(connection);
+		}
+		return outList;
+	}
+	
+	
+	/**
+	 * 
+	 *메서드명 : doRetrieveMember
+	 *작성일 : 2020. 2. 23.
+	 *작성자 : LG
+	 *설명 : 회원용 다건조회 
+	 *@param dto
+	 *@return List<?>
+	 */
+	public List<?> doRetrieveMember(DTO dto) {
+		SearchVO inVO =(SearchVO)dto;
+		List<List> outList = new ArrayList<List>();
+		
+		Connection connection=null;		
+		PreparedStatement pstmt=null;
+		ResultSet rs=null;
+		
+		StringBuilder sbWhere = new StringBuilder();	//검색조건
+		StringBuilder sb = new StringBuilder();			//검색query
+		
+		//검색구분 : 1(회원용 업체번호별+카테고리별)
+		if(inVO.getSearchDiv() != null || !inVO.getSearchDiv().equals("")) {
+			if("1".contentEquals(inVO.getSearchDiv())) {
+				sbWhere.append("AND l.category = ?														  	  	\n");
+			}
+		}
+		
+		//main query
+		   
+		sb.append("SELECT *                                                                                		\n");
+		sb.append("FROM(                                                                                   		\n");
+		sb.append("    SELECT rnum num                                                                     		\n");
+		sb.append("          ,b.*                                                                          		\n");
+		sb.append("    FROM(                                                                               		\n");
+		sb.append("        SELECT ROWNUM as rnum                                                           		\n");
+		sb.append("              ,a.*                                                                      		\n");
+		sb.append("        FROM(                                                                           		\n");
+		sb.append("            SELECT l.*,get_code('CATEGORY',l.category)                                       \n");
+		sb.append("            FROM landmark l,store s                                             				\n");
+		sb.append("            WHERE SUBSTR(l.lno,1,INSTR(l.lno,'_')-1) = SUBSTR(s.sno,1,INSTR(s.sno,'_')-1) 	\n");
+		sb.append("			   AND s.sno = ?															  	  	\n");
+		//----------------------------------------------------------------------------------------------------------
+		if(inVO.getSearchDiv()!=null || !inVO.getSearchDiv().equals("")) {
+		      if(inVO.getSearchWord()!=null) {
+		         sb.append(sbWhere.toString());
+		      }
+						   }
+		//----------------------------------------------------------------------------------------------------------
+		sb.append("            )a                                                                       		\n");
+		sb.append("        WHERE rownum<=(?*(?-1)+?)                                                       		\n");
+		sb.append("        )b                                                                              		\n");
+		sb.append("    WHERE rnum>=(?*(?-1)+1)                                                             		\n");
+		sb.append(")                                                                                       		\n");
+		sb.append("CROSS JOIN                                                                              		\n");
+		sb.append("(SELECT COUNT(*) total                                                                  		\n");
+		sb.append("  FROM landmark l,store s                                                                   	\n");
+		sb.append("  WHERE SUBSTR(l.lno,1,INSTR(l.lno,'_')-1) = SUBSTR(s.sno,1,INSTR(s.sno,'_')-1) 				\n");
+		sb.append("	 AND s.sno = ?				     													  	  	\n");
+		//----------------------------------------------------------------------------------------------------------
+		if(inVO.getSearchDiv()!=null || !inVO.getSearchDiv().equals("")) {
+		      if(inVO.getSearchWord()!=null) {
+		         sb.append(sbWhere.toString());
+		      }
+		   }
+		//----------------------------------------------------------------------------------------------------------
+		sb.append("		)																						\n");    
+
+		
+		
+		try {
+			//1.Connection
+			connection = this.connectionMaker.getConnection();
+			LOG.debug("1.Connection = "+connection);
+			
+			//2.pstmt
+			//2.1. 
+			LOG.debug("2.pstmt\n = "+sb.toString());
+			pstmt = connection.prepareStatement(sb.toString());
+			LOG.debug("2.pstmt = "+pstmt);
+			LOG.debug("3.param = "+inVO);
+						
+			
+			//검색어 있는 경우
+			
+			if((inVO.getSearchDiv().equals("1") &&!inVO.getSearchDiv().equals(""))&&
+					(inVO.getSearchWord()!=null&&inVO.getSearchWord02()!=null)) {
+				//1.업체번호
+				//2.카테고리
+				//3.PAGE_SIZE
+				//4.PAGE_NUM
+				//5.PAGE_SIZE
+				//6.PAGE_SIZE
+				//7.PAGE_NUM
+				//8.업체번호
+				//9.카테고리
+				pstmt.setString(1,inVO.getSearchWord());
+				pstmt.setString(2,inVO.getSearchWord02());
+				pstmt.setInt(3,inVO.getPageSize());
+				pstmt.setInt(4,inVO.getPageNum());
+				pstmt.setInt(5,inVO.getPageSize());
+				pstmt.setInt(6,inVO.getPageSize());
+				pstmt.setInt(7,inVO.getPageNum());
+				pstmt.setString(8,inVO.getSearchWord());
+				pstmt.setString(9,inVO.getSearchWord02());
+				
+				
+			}else {
+				pstmt.setInt(1,inVO.getPageSize());
+				pstmt.setInt(2,inVO.getPageNum());
+				pstmt.setInt(3,inVO.getPageSize());
+				pstmt.setInt(4,inVO.getPageSize());
+				pstmt.setInt(5,inVO.getPageNum());
+				
+			}
+			
+			//4.query 수행
+			rs = pstmt.executeQuery();
+			while(rs.next()) {
+				//Data 1건을 outVO에 담기
+				LandmarkVO outVO = new LandmarkVO();
+				
+				outVO.setLno(rs.getString("lno"));
+				outVO.setName(rs.getString("name"));
+				outVO.setAddrNo(rs.getString("addrno"));
+				outVO.setAddr(rs.getString("addr"));
+				outVO.setTel(rs.getString("tel"));
+				outVO.setCont(rs.getString("cont"));
+				outVO.setCategory(rs.getString("category"));
+				outVO.setRegId(rs.getString("regid"));
+				outVO.setRegDt(rs.getString("regdt"));
+				outVO.setModId(rs.getString("modid"));
+				outVO.setModDt(rs.getString("moddt"));
+				outVO.setFileId(rs.getString("fileid"));
+				outVO.setTotal(rs.getInt("total"));
+				
+				List<LandmarkVO> outListLandMarkVO = new ArrayList<LandmarkVO>();
+				outListLandMarkVO.add(outVO);
+				
+				FileMngVO inFileMngVO = new FileMngVO();
+				inFileMngVO.setFileId(outVO.getFileId());
+				LOG.debug("inFileMngVO: "+inFileMngVO);
+				
+				List<FileMngVO> outListFileMngVO = (List<FileMngVO>) fileMngDao.doRetrieve(inFileMngVO);
+				
+				List<List> miniOutList = new ArrayList<List>();
+				
+				miniOutList.add(outListLandMarkVO);
+				miniOutList.add(outListFileMngVO);
+				
+				outList.add(miniOutList);
+			}
+				LOG.debug("4.Return: "+outList);
+		}catch(SQLException e) {
+			LOG.debug("=====================");
+			LOG.debug("SQLException= "+e.getMessage());
+			LOG.debug("=====================");
+			e.printStackTrace();
+			
+		}finally {
+			JDBCResClose.close(rs);
+			JDBCResClose.close(pstmt);
+			JDBCResClose.close(connection);
+		}
+		return outList;
+	}
+	
+	
+	
+	
+	/**
+	 * 
+	 *@Method Name:doUpdate
+	 *@작성일: 2020. 2. 4.
+	 *@작성자: sist
+	 *@설명: 관광명소 수정
+	 *@param dto
+	 *@return int
+	 */
+	@Override
+		public int doUpdate(DTO dto) {
+		int flag = 0;
+		LandmarkVO inVO = (LandmarkVO) dto;	 
+		Connection connection 	= null;  
+		PreparedStatement pstmt = null;	  
+		try {
+			//1.Connection 생성
+			connection = connectionMaker.getConnection();
+			connection.setAutoCommit(false); 			
+			LOG.debug("1.Connection:\n"+connection); 
+			
+			//2.PreparedStatement
+			//2.1.SQL
+			StringBuilder sb = new StringBuilder();	
+			sb.append("UPDATE landmark						\n");
+			sb.append("SET addrno=?     					\n");
+			sb.append("	,addr=?         					\n");
+			sb.append("	,tel=?           					\n");
+			sb.append("	,cont=?          					\n");
+			sb.append("	,modid=?         					\n");
+			sb.append("	,moddt=SYSDATE     					\n");
+			sb.append("	,fileid=?        					\n");
+			sb.append("WHERE lno=?    						\n");
+
+			
+			pstmt = connection.prepareStatement(sb.toString());
+			LOG.debug("2.PreparedStatement:\n"+pstmt);  
+			LOG.debug("2.1.query:\n"+sb.toString()); 
+			
+			//3.param
+			LOG.debug("3.param:\n"+inVO);  
+			
+			//3.1.param binding
+			pstmt.setString(1, inVO.getAddrNo());
+			pstmt.setString(2,inVO.getAddr());
+			pstmt.setString(3, inVO.getTel());
+			pstmt.setString(4, inVO.getCont());
+			pstmt.setString(5, inVO.getModId());
+			pstmt.setString(6, inVO.getFileId());
+			pstmt.setString(7,inVO.getLno());
+			
+			//4.query 수행
+			flag = pstmt.executeUpdate();	
+			LOG.debug("4.flag: "+flag);    
+			connection.commit();
+			
+		}catch(SQLException e) {
+			LOG.debug("===================================");
+			LOG.debug("SQLException = "+e.getMessage());
+			LOG.debug("===================================");
+			e.printStackTrace();
+		
+			//RollBack
+			JDBCResClose.rollBack(connection);
+			
+		}finally {	
+			JDBCResClose.close(pstmt); 		
+			JDBCResClose.close(connection); 
+		}
+		return flag;		
+	}
+	
+	/**
+	 * 
+	 *@Method Name:doDelete
+	 *@작성일: 2020. 2. 4.
+	 *@작성자: sist
+	 *@설명: 관광명소 삭제
+	 *@param dto
+	 *@return int
+	 */
+	@Override
+	public int doDelete(DTO dto) {
+		int flag = 0;
+		Connection connection = connectionMaker.getConnection();
+					    
+		//3.query 수행을 위한 PreparedStatement 구함	
+			
+		StringBuilder sb = new StringBuilder();
+		sb.append("DELETE FROM landmark \n");
+		sb.append("WHERE lno = ?     \n");
+			
+		PreparedStatement pstmt= null;
+		LandmarkVO inVO = (LandmarkVO) dto;
+			
+			
+			
+		try {
+				LOG.debug("2.sql =\n"+sb.toString());
+				LOG.debug("2.1 param =\n"+inVO);
+				
+			    pstmt = connection.prepareStatement(sb.toString()); 
+			    LOG.debug("3.pstmt = "+pstmt);
+			
+			//4.query 실행
+			//4.1. Bind변수에 값 설정
+			pstmt.setString(1, inVO.getLno());
+			
+			//4.2. query 수행
+			flag = pstmt.executeUpdate(); 
+			LOG.debug("4.flag"+flag);
+			
+		} catch (SQLException e) {
+			LOG.debug("========================");
+		    LOG.debug("SQLException="+e.getMessage());
+		    LOG.debug("========================");
+			e.printStackTrace();
+		//6.PreparedStatement,ResultSet 종료	
+		//7.Connection 종료	
+		}finally {
+			JDBCResClose.close(pstmt); 		
+			JDBCResClose.close(connection); 			
+		}
+		return flag;
+	}
+	
+	
+}

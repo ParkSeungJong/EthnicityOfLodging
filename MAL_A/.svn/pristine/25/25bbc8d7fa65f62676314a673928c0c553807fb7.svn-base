@@ -1,0 +1,421 @@
+<%--
+  /**
+  * Class Name : 
+  * Description : 
+  * Modification Information
+  *
+  *   수정일                   수정자                      수정내용
+  *  -------    --------    ------------------
+  *  2020. 3. 9.       WH           최초 생성
+  *
+  * author 실행환경 개발팀
+  * since 2009.01.06
+  *
+  * Copyright (C) 2009 by KandJang  All right reserved.
+  */
+--%>
+<%@page import="com.mal_a.filemng.FileMngVO"%>
+<%@ page language="java" contentType="text/html; charset=UTF-8"
+    errorPage="/cmn/error.jsp"
+    pageEncoding="UTF-8"%>
+<%@ include file="/cmn/common.jsp" %>
+<%@ taglib  prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>    
+<%@ taglib  prefix="fmt" uri="http://java.sun.com/jsp/jstl/fmt" %>
+<%@ taglib  prefix="fn" uri="http://java.sun.com/jsp/jstl/functions" %>   
+
+<%@page import="com.mal_a.cmn.StringUtil"%>    
+<%@page import="com.mal_a.code.CodeVO"%>
+<%@page import="com.mal_a.cmn.SearchVO"%>
+<%@page import="com.mal_a.comments.CommentsVO"%>
+<%@page import="com.mal_a.comments.CommentsCont"%>
+<%@page import="java.util.List"%>  
+<%
+//req.setAttribute("list", list);//목록
+//req.setAttribute("paramVO", inVO);//param
+//req.setAttribute("totalCnt", totalCnt);
+    //param
+    String pageNum    ="1";//페이지 넘버
+    String searchDiv  = "";//검색구분
+    String searchWord ="";//검색어
+    String pageSize   ="10";//페이지 사이즈
+
+    SearchVO inVO= (SearchVO)request.getAttribute("paramVO");
+    if(null !=inVO){
+        LOG.debug("===========");
+        LOG.debug("=inVO="+inVO);
+        LOG.debug("===========");
+        pageNum    = String.valueOf(inVO.getPageNum());
+        searchDiv  = inVO.getSearchDiv();
+        searchWord = inVO.getSearchWord();
+        pageSize   = String.valueOf(inVO.getPageSize());
+    }
+    
+    //code
+    List<CodeVO> searchList =  (List<CodeVO>)request.getAttribute("searchList");
+    /*
+    for(CodeVO vo :searchList) {
+        //out.print(vo+"<br>");
+    }
+    */
+    
+    List<CodeVO> pageSizeList = (List<CodeVO>)request.getAttribute("pageSizeList");
+    /*
+    for(CodeVO vo :pageSizeList) {
+        out.print(vo+"<br>");
+    }
+    */
+    
+    
+    
+    List<CommentsVO> commentList = (List<CommentsVO>)request.getAttribute("commentList");
+    /*
+    for(BoardVO vo :list) {
+        //out.print(vo+"<br>");
+    }
+    */
+    //paging
+    int maxNum     = 0;//총글수 
+    int currPageNo = 1;//현재 페이지 
+    int rowsPerPage= 10;// pageSize 
+    
+    int bottomCount= 10;// 바닥 page_cnt
+    
+    String url = HR_PATH+"/roxandrea/comments.do";//호출 URL 
+    String scriptName = "doSearchPage";//JavaScript함수: doSearchPage(url,no)
+    if(null !=inVO){
+        maxNum     = (Integer)request.getAttribute("totalCnt");
+        currPageNo = inVO.getPageNum();
+        rowsPerPage= inVO.getPageSize();
+        
+        LOG.debug("=======================");
+        LOG.debug("url="+url);
+        LOG.debug("scriptName="+scriptName);
+        LOG.debug("maxNum="+maxNum);
+        LOG.debug("currPageNo="+currPageNo);
+        LOG.debug("rowsPerPage="+rowsPerPage);
+        LOG.debug("=======================");
+    }
+    
+    
+    //--paging
+	
+
+%>
+
+<c:url value="/roxandrea/member.do" var="myPage">
+ <c:param name="workDiv" value="doSelectOne"></c:param>
+</c:url>
+
+<c:url value="/roxandrea/board.do" var="hrUrl">
+ <c:param name="workDiv" value="doRetrieve"></c:param>
+</c:url>
+
+   
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+  <script  src="https://code.jquery.com/jquery-2.2.4.js"></script>
+    <title>숙박의 민족 - MAL_A</title>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+    
+    <link href="https://fonts.googleapis.com/css?family=Poppins:200,300,400,500,600,700" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css?family=Playfair+Display:400,400i,700,700i" rel="stylesheet">
+
+    <link rel="stylesheet" href="css/open-iconic-bootstrap.min.css">
+    <link rel="stylesheet" href="css/animate.css">
+    
+    <link rel="stylesheet" href="css/owl.carousel.min.css">
+    <link rel="stylesheet" href="css/owl.theme.default.min.css">
+    <link rel="stylesheet" href="css/magnific-popup.css">
+
+    <link rel="stylesheet" href="css/aos.css">
+
+    <link rel="stylesheet" href="css/ionicons.min.css">
+
+    <link rel="stylesheet" href="css/bootstrap-datepicker.css">
+    <link rel="stylesheet" href="css/jquery.timepicker.css">
+
+    
+    <link rel="stylesheet" href="css/flaticon.css">
+    <link rel="stylesheet" href="css/icomoon.css">
+    <link rel="stylesheet" href="css/style.css">
+  </head>
+  <body>
+
+    <nav class="navbar navbar-expand-lg navbar-dark ftco_navbar bg-dark ftco-navbar-light" id="ftco-navbar">
+        <div class="container">
+          <a class="navbar-brand" href="member_main.jsp">숙박의민족</a>
+          <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#ftco-nav" aria-controls="ftco-nav" aria-expanded="false" aria-label="Toggle navigation">
+            <span class="oi oi-menu"></span> Menu
+          </button>
+
+          <div class="collapse navbar-collapse" id="ftco-nav">
+            <ul class="navbar-nav ml-auto">
+              <li class="nav-item"><a href="/MAL_A/roxandrea/store_search.jsp" class="nav-link">업체검색</a></li>
+              <li class="nav-item"><a href="${hrUrl}" class="nav-link">자유게시판</a></li>
+              <li class="nav-item"><a href="${myPage}" class="nav-link">마이페이지</a></li>
+              <li class="nav-item"><a href="log_in.jsp" class="nav-link">로그아웃</a></li>
+              
+            </ul>
+          </div>
+        </div>
+      </nav>
+    <!-- END nav -->
+        <div class="hero-wrap" style="background-image: url('images/bg_1.jpg');">
+      <div class="overlay"></div>
+      <div class="container">
+        <div class="row no-gutters slider-text d-flex align-itemd-end justify-content-center">
+          <div class="col-md-9 ftco-animate text-center d-flex align-items-end justify-content-center">
+            <div class="text">
+                <p class="breadcrumbs mb-2"> <span>BOARD</span></p>
+                <h1 class="mb-4 bread">BOARD UPDATE</h1>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+<section class="ftco-section ftco-menu">
+   <div class="container">
+       <div class="row justify-content-center mb-5 pb-3">
+          <div class="col-md-7 heading-section text-center ftco-animate">
+             
+            <h2></h2>
+          </div>
+        </div>
+        
+        <div class="col-md-17">
+         
+            <div class="container">  
+                <!-- div title --> 
+                <div class="page-header">
+                </div> 
+                <div class="row text-right">
+                    <label for="title" class="col-lg-2 col-md-2 col-sm-2 col-xs-2 control-label"></label>
+                    <div class="col-lg-10 col-md-10 col-sm-10 col-xs-10">
+                        <input  type="button"  class="btn btn-default btn-sm"  value="목록" id="toListBtn" />
+                        <input  type="button"  class="btn btn-default btn-sm"  value="수정" id="updateBtn" />
+                        <input  type="button"  class="btn btn-default btn-sm"  value="삭제" id="deleteBtn" />
+                    </div>
+                </div>  
+                
+                
+                <form name="insert_frm"  class="form-horizontal"  action='<%=HR_PATH %>/roxandrea/board.do'  method="post">
+                    <input type="hidden" name="workDiv"  id="workDiv" />
+                    <input type="hidden" name="seq"  id="seq" value="${vo.bno}" />
+                    <div class="form-group">
+                        <label for="title" class="col-lg-2 col-md-2 col-sm-2 col-xs-2 control-label">제목</label>
+                        <div class="col-lg-10 col-md-10 col-sm-10 col-xs-10">
+                            <input type="text" placeholder="제목" class="form-control" value="${vo.title}" name="title" id="title" size="20"  />
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label for="title" class="col-lg-2 col-md-2 col-sm-2 col-xs-2 control-label">작성자</label>
+                        <div class="col-lg-10 col-md-10 col-sm-10 col-xs-10">
+                            <input type="text" placeholder="작성자" class="form-control" value="${vo.regId }" name="regId" id="regId" size="20"  readonly/>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label for="title" class="col-lg-2 col-md-2 col-sm-2 col-xs-2 control-label">조회수</label>
+                        <div class="col-lg-10 col-md-10 col-sm-10 col-xs-10">
+                            <input type="text"  class="form-control"  placeholder="조회수" value="${vo.cnt }" name="read_cnt" id="read_cnt" size="20" readonly/>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label for="title" class="col-lg-2 col-md-2 col-sm-2 col-xs-2 control-label">내용</label>
+                        <div class="col-lg-10 col-md-10 col-sm-10 col-xs-10">
+                            <textarea rows="5"  class="form-control"  name="contents" id="contents" cols="40">${vo.cont }</textarea>
+                        </div>
+                    </div>
+                </form>
+            </div>    
+   </div>
+</div>
+
+
+    </section>
+
+ <%@ include file="/cmn/footer.jsp" %>
+    
+  
+
+  <!-- loader -->
+  <div id="ftco-loader" class="show fullscreen"><svg class="circular" width="48px" height="48px"><circle class="path-bg" cx="24" cy="24" r="22" fill="none" stroke-width="4" stroke="#eeeeee"/><circle class="path" cx="24" cy="24" r="22" fill="none" stroke-width="4" stroke-miterlimit="10" stroke="#F96D00"/></svg></div>
+
+
+  <script src="js/jquery.min.js"></script>
+  <script src="js/jquery-migrate-3.0.1.min.js"></script>
+  <script src="js/popper.min.js"></script>
+  <script src="js/bootstrap.min.js"></script>
+  <script src="js/jquery.easing.1.3.js"></script>
+  <script src="js/jquery.waypoints.min.js"></script>
+  <script src="js/jquery.stellar.min.js"></script>
+  <script src="js/owl.carousel.min.js"></script>
+  <script src="js/jquery.magnific-popup.min.js"></script>
+  <script src="js/aos.js"></script>
+  <script src="js/jquery.animateNumber.min.js"></script>
+  <script src="js/jquery.mb.YTPlayer.min.js"></script>
+  <script src="js/bootstrap-datepicker.js"></script>
+  <!-- // <script src="js/jquery.timepicker.min.js"></script> -->
+  <script src="js/scrollax.min.js"></script>
+  <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyBVWaKrjvy3MaE7SQ74_uJiULgl1JY0H2s&sensor=false"></script>
+  <script src="js/google-map.js"></script>
+  <script src="js/main.js"></script>
+  
+  <script type="text/javascript">
+    //수정
+    $("#updateBtn").on("click",function(){
+        console.log("#updateBtn");
+        
+        //seq
+        var seq = $("#seq").val();
+        if(null ==seq || seq.trim().length ==0){
+            alert("순번을 확인 하세요.");
+            return;
+        }
+        //title
+        var title = $("#title").val();
+        if(null ==title || title.trim().length ==0){
+            $("#title").focus();
+            alert("제목을 확인 하세요.");
+            return;
+        }
+        //contents
+        var contents = $("#contents").val();
+        if(null ==contents || contents.trim().length ==0){
+            $("#contents").focus();
+            alert("내용을 확인 하세요.");
+            return;
+        }
+        
+        if(false==confirm(title+'을(를)\n수정하시겠습니까?'))return;
+        
+        //ajax
+        $.ajax({
+          type:"POST",
+          url:"/MAL_A/roxandrea/board.do",
+          dataType:"html", 
+          data:{"workDiv":"doUpdate",
+                "seq":$("#seq").val(),
+                "title":$("#title").val(),
+                "regId":$("#regId").val(),
+                "contents":$("#contents").val()
+          },
+          success:function(data){ //성공
+               console.log("data="+data);
+            // alert("data:"+data);
+               var jData = JSON.parse(data);
+               //성공
+               if(null !=jData && jData.msgId=="1"){
+                   alert(jData.msgContents);
+                   goRetrieve1();
+               }else{
+                   alert(jData.msgId+"||"+jData.msgContents);
+               }
+            
+            
+          },
+          error:function(xhr,status,error){
+           alert("error:"+error);
+          },
+          complete:function(data){
+          
+          }   
+        
+        });//--ajax
+        
+    });
+    
+ 
+    
+    
+
+
+    //삭제
+    $("#deleteBtn").on("click",function(){
+        //console.log("#deleteBtn");
+        var seq = $("#seq").val();
+        
+        console.log("seq="+seq);
+        if(seq == null){
+            alert("순번을 확인 하세요.");
+            return;
+        }
+        
+        if(false==confirm('삭제하시겠습니까?'))return;   
+        //ajax
+        $.ajax({
+            type:"POST",
+            url:"/MAL_A/roxandrea/board.do",
+            dataType:"html", 
+            data:{"workDiv":"doDelete",
+                  "seq":$("#seq").val()
+            },
+            success:function(data){ //성공
+               console.log("data="+data);
+               //alert("data:"+data);
+               var jData = JSON.parse(data);
+               //성공
+               if(null !=jData && jData.msgId=="1"){
+                   alert(jData.msgContents);
+                   goRetrieve();
+               }else{
+                   alert(jData.msgId+"||"+jData.msgContents);
+               }
+
+            },
+            error:function(xhr,status,error){
+             alert("error:"+error);
+            },
+            complete:function(data){
+
+            }   
+        });//--ajax     
+        
+        
+        
+    });
+
+
+    
+
+    
+    function goRetrieve(){
+        window.location.href='/MAL_A/roxandrea/board.do?workDiv=doRetrieve';
+    }
+    function goRetrieve1(sq){
+    	 history.go(0);
+    }
+
+  
+    //위에서 아래로 해석(인터프리터 방식)
+    $("#toListBtn").on('click',function(){
+        //console.log("#toListBtn");
+        goRetrieve();
+    });
+ 
+    
+    
+    
+    
+ 
+    
+    
+    $(document).ready(function(){
+        
+        //console.log("document ready");
+
+    
+    });
+    
+
+
+
+</script>   
+  
+  
+    
+  </body>
+</html>

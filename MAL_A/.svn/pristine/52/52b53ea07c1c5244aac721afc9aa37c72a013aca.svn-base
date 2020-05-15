@@ -1,0 +1,466 @@
+<%--
+  /**
+  * Class Name : 
+  * Description : 
+  * Modification Information
+  *
+  *   수정일                   수정자                      수정내용
+  *  -------    --------    ---------------------------
+  *  2020. 2. 24.            최초 생성
+  *
+  * author 실행환경 개발팀
+  * since 2009.01.06
+  *
+  * Copyright (C) 2009 by KandJang  All right reserved.
+  */
+--%>
+<%@page import="com.mal_a.cmn.StringUtil"%>
+<%@page import="com.mal_a.code.CodeVO"%>
+<%@page import="com.mal_a.cmn.SearchVO"%>
+<%@page import="java.util.List"%>
+<%@ page language="java" contentType="text/html; charset=UTF-8"
+    errorPage="/cmn/error.jsp"
+    pageEncoding="UTF-8"%>
+<%@ include file="/cmn/common.jsp" %> 
+<%@ taglib  prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>    
+<%@ taglib  prefix="fmt" uri="http://java.sun.com/jsp/jstl/fmt" %>
+<c:url value="/roxandrea/board.do" var="hrUrl">
+ <c:param name="workDiv" value="doAdminRetrieve"></c:param>
+</c:url>
+
+<c:url value="/roxandrea/member.do" var="myPage">
+ <c:param name="workDiv" value="doSelectOne"></c:param>
+</c:url>
+
+<c:url value="/roxandrea/member.do" var="logOut">
+ <c:param name="workDiv" value="doLogout"></c:param>	
+</c:url>
+<%
+	List<CodeVO> searchList = (List<CodeVO>)request.getAttribute("searchList");
+ 	List<CodeVO> list = (List<CodeVO>)request.getAttribute("list");
+%>
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <title>숙박의민족 - MAL_A</title>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+    <link href="https://fonts.googleapis.com/css?family=Poppins:200,300,400,500,600,700" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css?family=Playfair+Display:400,400i,700,700i" rel="stylesheet">
+    <link rel="stylesheet" href="css/open-iconic-bootstrap.min.css">
+    <link rel="stylesheet" href="css/animate.css">
+    <link rel="stylesheet" href="css/owl.carousel.min.css">
+    <link rel="stylesheet" href="css/owl.theme.default.min.css">
+    <link rel="stylesheet" href="css/magnific-popup.css">
+    <link rel="stylesheet" href="css/aos.css">
+    <link rel="stylesheet" href="css/ionicons.min.css">
+    <link rel="stylesheet" href="css/bootstrap-datepicker.css">
+    <link rel="stylesheet" href="css/jquery.timepicker.css">
+    <link rel="stylesheet" href="css/flaticon.css">
+    <link rel="stylesheet" href="css/icomoon.css">
+    <link rel="stylesheet" href="css/style.css">
+    
+    
+  </head>
+  
+    <!-- 폰트 다운로드 -->
+   <link href="https://fonts.googleapis.com/css?family=Nanum+Pen+Script&display=swap&subset=korean" rel="stylesheet">
+   <link href="https://fonts.googleapis.com/css?family=Sunflower:300&display=swap" rel="stylesheet">
+    <style>
+       #area{
+       	font-family: 'Sunflower' ;
+       }
+       #keywords{
+        font-family: 'Sunflower' ;
+       }
+    </style>
+<body>
+	
+	<form name="form" id="form" action="/MAL_A/roxandrea/member.do"  method="post" >
+	    <input type="hidden" name="workDiv" value="doInsert" id="workDiv" />
+	    <input type="hidden" name="mid"  id="mid"/>
+	</form>
+	
+	<form name="insert_frm" id="insert_frm" action="/MAL_A/roxandrea/sto_option_list.do"  method="post">
+     <input type="hidden" name="workDiv" value="do_retrieve" id="workDiv" />
+     <input type="hidden" name="autho" id="autho">
+     <input type="hidden" name="options" id="options">
+     <input type="hidden" name="optionText" id="optionText">
+    
+    
+   <script language="javascript"> 
+   var pop;
+    function goPopup(){
+	
+    	var popupX = (window.screen.width / 2) - (500 / 2);
+    
+    	var popupY= (window.screen.height / 2) - (600 / 2);
+    	
+    	pop = window.open("http://localhost:8080/MAL_A/roxandrea/sto_option_list.do?work_div=do_retrieve","pop", 'status=no, width=500,height=600, left='+ popupX + ', top='+ popupY,"scrollbars=yes, resizable=yes");
+}
+    </script>
+     
+	<nav class="navbar navbar-expand-lg navbar-dark ftco_navbar bg-dark ftco-navbar-light" id="ftco-navbar">
+	    <div class="container">
+	      <a class="navbar-brand" href="admin_main.jsp">숙박의민족_관리자</a>
+	      <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#ftco-nav" aria-controls="ftco-nav" aria-expanded="false" aria-label="Toggle navigation">
+	        <span class="oi oi-menu"></span> 메뉴
+	      </button>
+
+			
+	      <div class="collapse navbar-collapse" id="ftco-nav">
+	        <ul class="navbar-nav ml-auto">
+	        <li class="nav-item"><a href="/MAL_A/roxandrea/admin_store_search.jsp" class="nav-link">업체검색</a></li>
+	        <li class="nav-item"><a href="javascript:goStoreListAll();" class="nav-link">업체관리</a></li>
+	        <li class="nav-item"><a href="javascript:goLandmarkListAll()" class="nav-link">관광명소관리</a></li>
+	        <li class="nav-item"><a href="${hrUrl}" class="nav-link">자유게시판관리</a></li>
+	        <li class="nav-item"><a href="javascript:goMemberListAll();" class="nav-link">회원관리</a></li>
+	        <li class="nav-item"><a href="${myPage}" class="nav-link">마이페이지</a></li>
+	        <li class="nav-item"><a href="${logOut}" class="nav-link" onclick="if(false == confirm('로그아웃 하시겠습니까?')){return false;}">로그아웃</a></li>
+	        </ul>
+	      </div>
+	      
+	      
+	    </div>
+	  </nav>
+    <!-- END nav -->
+    
+    <div class="hero">
+			<div class="container-wrap d-flex justify-content-end align-items-end">
+					<span class="ion-ios-play play"></span>
+			</div>
+	    <section class="home-slider owl-carousel">
+	      <div class="slider-item" style="background-image:url(images/bg_1.jpg);">
+	      	<div class="overlay"></div>
+	        <div class="container">
+	          <div class="row no-gutters slider-text align-items-center">
+	          <div class="col-md-8 ftco-animate">
+	          	<div class="text mb-5 pb-5">
+		            <h1 class="mb-3">민족_관리자</h1>
+		            <h2>업체 검색</h2>
+	            </div>
+	          </div>
+	        </div>
+	        </div>
+	      </div>
+
+	      <div class="slider-item" style="background-image:url(images/bg_2.jpg);">
+	      	<div class="overlay"></div>
+	        <div class="container">
+	          <div class="row no-gutters slider-text align-items-center">
+	          <div class="col-md-8 ftco-animate">
+	          	<div class="text mb-5 pb-5">
+		            <h1 class="mb-3">민족_관리자</h1>
+		            <h2>업체  &amp; 검색</h2>
+	            </div>
+	          </div>
+	        </div>
+	        </div>
+	      </div>
+	    </section>
+	  </div>
+	  
+	  <section class="ftco-booking ftco-section ftco-no-pt ftco-no-pb">
+    	<div class="container">
+    		<div class="row">
+    			<div class="col-lg-12 pr-1 aside-stretch">
+	        		<div class="row">
+	        			
+	        			<!-- 달력 -->
+	        			<div class="col-md d-flex py-md-4">
+							<div class="form-group align-self-stretch d-flex align-items-end">				
+										<div class="wrap bg-white align-self-stretch py-3 px-4">
+											<label for="#">체크인</label>
+											<input type="text" class="form-control" placeholder="Check-in" id="checkInDate" name="checkInDate" onchange="javascript:doCheckDate(0);"/>
+										</div>
+							</div>
+						</div>
+										
+						<div class="col-md d-flex py-md-4">
+							<div class="form-group align-self-stretch d-flex align-items-end">
+										<div class="wrap bg-white align-self-stretch py-3 px-4">
+											<label for="#">체크아웃</label>
+											<input type="text" class="form-control" placeholder="Check-out" id="checkOutDate" name="checkOutDate" onchange="javascript:doCheckDate(0);"/>
+										</div>
+							</div>
+						</div>
+			<!-- //달력 -->
+	        		
+	        			<div class="col-md d-flex py-md-4">
+	        				<div class="form-group align-self-stretch d-flex align-items-end">
+	        					<div class="wrap bg-white align-self-stretch py-3 px-5">
+			      					<label for="#">지역</label>
+			      					<div class="form-field">
+			        					<div class="select-wrap">
+			                    <select  name="selectBox" id="selectBox" class="form-control">
+			                    	<option value="02" >서울</option>
+			                    	<option value="051" >부산</option>
+			                      	<option value="032" >인천</option>
+			                      	<option value="031" >경기</option>
+			                      	<option value="033" >강원</option>
+			                      	<option value="043" >충북</option>
+			                      	<option value="042" >대전</option>
+			                      	<option value="041" >충남</option>
+			                      	<option value="054" >경북</option>
+			                      	<option value="053" >대구</option>
+			                      	<option value="055" >경남</option>
+			                      	<option value="052" >울산</option>
+			                      	<option value="063" >전북</option>
+			                      	<option value="062" >광주</option>
+			                      	<option value="061" >전남</option>
+			                      	<option value="064" >제주</option>
+			                    </select>
+			                  </div>
+				              </div>
+				            </div>
+		              		</div>
+	        			</div>
+	        			
+	        			<div class="col-md d-flex py-md-4">
+	        				<div class="form-group align-self-stretch d-flex align-items-end">
+	        					<div class="wrap bg-white align-self-stretch py-3 px-4">
+			      					<label for="#">Keywords</label>
+			      					<div class="form-field">
+			        					<div class="select-wrap">
+			        					<input type="button" onClick="goPopup();" value="keywords"/>
+			        					<input type="text" name="options1" id="options1">
+			                  			</div>
+				              		</div>
+				            	</div>
+		              		</div>
+	        			</div>
+	        			
+	        			<div class="col-md d-flex" >
+	        				<div class="form-group d-flex align-self-stretch">
+			              <a href="#" onclick="stoMain()" id="gostore_list" class="btn btn-black py-5 py-md-3 px-4 align-self-stretch d-block"><span>Searching Availability <small>Best Driver Gyu!</small></span></a>
+			            </div>
+	        			</div>
+	        		</div>
+	    		</div>
+    		</div>
+    	</div>
+    	
+    	
+    </section>
+    
+    
+    <section class="ftco-section">
+      <div class="container">
+      	<div class="row justify-content-center mb-5 pb-3">
+          <div class="col-md-7 heading-section text-center ftco-animate">
+          	<span class="subheading">Welcome to 숙박의민족</span>
+            <h2 class="mb-4">A New Vision of Luxury</h2>
+          </div>
+        </div>  
+        <div class="row d-flex">
+          <div class="col-md pr-md-1 d-flex align-self-stretch ftco-animate">
+            <div class="media block-6 services py-4 d-block text-center">
+              <div class="d-flex justify-content-center">
+              	<div class="icon d-flex align-items-center justify-content-center">
+              		<span class="flaticon-reception-bell"></span>
+              	</div>
+              </div>
+              <div class="media-body">
+                <h3 class="heading mb-3">PENSION</h3>
+              </div>
+            </div>      
+          </div>
+          <div class="col-md px-md-1 d-flex align-self-stretch ftco-animate">
+            <div class="media block-6 services active py-4 d-block text-center">
+              <div class="d-flex justify-content-center">
+              	<div class="icon d-flex align-items-center justify-content-center">
+              		<span class="flaticon-serving-dish"></span>
+              	</div>
+              </div>
+              <div class="media-body">
+                <h3 class="heading mb-3">MOTEL</h3>
+              </div>
+            </div>    
+          </div>
+          <div class="col-md px-md-1 d-flex align-sel Searchf-stretch ftco-animate">
+            <div class="media block-6 services py-4 d-block text-center">
+              <div class="d-flex justify-content-center">
+              	<div class="icon d-flex align-items-center justify-content-center">
+              		<span class="flaticon-car"></span>
+              	</div>
+              </div>
+              <div class="media-body">
+                <h3 class="heading mb-3">HOTEL</h3>
+              </div>
+            </div>      
+          </div>
+          <div class="col-md px-md-1 d-flex align-self-stretch ftco-animate">
+            <div class="media block-6 services py-4 d-block text-center">
+              <div class="d-flex justify-content-center">
+              	<div class="icon d-flex align-items-center justify-content-center">
+              		<span class="flaticon-spa"></span>
+              	</div>
+              </div>
+              <div class="media-body">
+                <h3 class="heading mb-3">Suits &amp; SPA</h3>
+              </div>
+            </div>      
+          </div>
+          <div class="col-md pl-md-1 d-flex align-self-stretch ftco-animate">
+            <div class="media block-6 services py-4 d-block text-center">
+              <div class="d-flex justify-content-center">
+              	<div class="icon d-flex align-items-center justify-content-center">
+              		<span class="ion-ios-bed"></span>
+              	</div>
+              </div>
+              <div class="media-body">
+                <h3 class="heading mb-3">LOVE</h3>
+              </div>
+            </div>      
+          </div>
+        </div>
+      </div>
+     
+      
+    </section>
+	
+	
+	
+
+		 <!-- loader -->
+  <div id="ftco-loader" class="show fullscreen"><svg class="circular" width="48px" height="48px"><circle class="path-bg" cx="24" cy="24" r="22" fill="none" stroke-width="4" stroke="#eeeeee"/><circle class="path" cx="24" cy="24" r="22" fill="none" stroke-width="4" stroke-miterlimit="10" stroke="#F96D00"/></svg></div>
+</form>
+
+  <script src="js/jquery.min.js"></script>
+  <script src="js/jquery-migrate-3.0.1.min.js"></script>
+  <script src="js/popper.min.js"></script>
+  <script src="js/bootstrap.min.js"></script>
+  <script src="js/jquery.easing.1.3.js"></script>
+  <script src="js/jquery.waypoints.min.js"></script>
+  <script src="js/jquery.stellar.min.js"></script>
+  <script src="js/owl.carousel.min.js"></script>
+  <script src="js/jquery.magnific-popup.min.js"></script>
+  <script src="js/aos.js"></script>
+  <script src="js/jquery.animateNumber.min.js"></script>
+  <script src="js/jquery.mb.YTPlayer.min.js"></script>
+  <script src="js/bootstrap-datepicker.js"></script>
+  <!-- // <script src="js/jquery.timepicker.min.js"></script> -->
+  <script src="js/scrollax.min.js"></script>
+  <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyBVWaKrjvy3MaE7SQ74_uJiULgl1JY0H2s&sensor=false"></script>
+  <script src="js/google-map.js"></script>
+  <script src="js/main.js"></script>
+  
+  
+  	<link rel="stylesheet" href="https://code.jquery.com/ui/1.8.18/themes/base/jquery-ui.css" />
+	<script src="https://ajax.googleapis.com/ajax/libs/jquery/1.7.1/jquery.min.js"></script>
+	<script src="https://code.jquery.com/ui/1.8.18/jquery-ui.min.js"></script>
+  
+  <script type="text/javascript">
+		
+		function doCheckDate(check){
+				$("#checkDate").val(check);
+			}
+
+		//달력
+		$(document).ready(function(){
+			//달력 양식 생성
+			$.datepicker.setDefaults({
+				dateFormat: 'yy-mm-dd',
+		        prevText: '이전 달',
+		        nextText: '다음 달',
+		        monthNames: ['1월', '2월', '3월', '4월', '5월', '6월', '7월', '8월', '9월', '10월', '11월', '12월'],
+		        monthNamesShort: ['1월', '2월', '3월', '4월', '5월', '6월', '7월', '8월', '9월', '10월', '11월', '12월'],
+		        dayNames: ['일', '월', '화', '수', '목', '금', '토'],
+		        dayNamesShort: ['일', '월', '화', '수', '목', '금', '토'],
+		        dayNamesMin: ['일', '월', '화', '수', '목', '금', '토'],
+		        showMonthAfterYear: true,
+		        yearSuffix: 'Year'
+			});
+		    
+			//달력 적용
+		    $("#checkInDate").datepicker();
+		    $("#checkOutDate").datepicker();
+		});  
+		//--달력
+		
+
+		function doRetrieve(){
+			//alert('doRetrieve');
+			var frm = document.searchFrm;
+			frm.work_div.value = "do_retrieve";
+			frm.action = '/roxandrea/sto_option_list.do';
+			frm.submit();
+		}
+	
+	
+	function btnClick() {
+		var optionText = 
+			$("#checkIn").val()
+		+	$("#checkOut").val()
+		+	$("#selectBox option:checked").text()
+		
+		alert($("#checkInDate").val()+"부터\n"+$("#checkOutDate").val()+"까지\n"+$("#selectBox option:checked").text()+"에서\n"+$("#optionText").val()+"옵션들을 선택하셨습니다.");
+		pop.close();
+		
+		
+	}
+	
+	function btnClick2() {
+		
+		pop.close(); 
+	}
+	
+function stoMain() {
+		
+		var frm = document.insert_frm;
+		frm.workDiv.value = "doStoretrieve";
+		frm.autho.value = "3";
+		frm.action = '/MAL_A/roxandrea/store.do';
+		
+		//달력 유효성검사
+		var checkInDate = $("#checkInDate").val();
+  	  	var checkOutDate = $("#checkOutDate").val();
+		
+		//날짜 유효성 검사
+  	  	var checkInDateArr = checkInDate.split("-");
+  	  	var checkOutDateArr = checkOutDate.split("-");
+  	  	var startDt = checkInDateArr[0] + checkInDateArr[1] + checkInDateArr[2];
+  	  	var endDt = checkOutDateArr[0] + checkOutDateArr[1] + checkOutDateArr[2];
+  	  	
+  	  	if(startDt==""){
+  	  		alert("시작 날짜를 선택해주세요.");
+  	  		return;
+  	  	}else if(endDt==""){
+  	  		alert("종료 날짜를 선택해주세요.");
+	  		return;
+  	  	}if(startDt>=endDt){
+  	  		alert("시작 날짜가 종료 날짜보다 같거나 클 수 없습니다.");
+  	  		return;
+  	  	}
+  	  frm.submit();
+		
+	}
+	
+	function goMemberMypage(){
+		var frm = document.form;
+		
+		alert(idSession);
+		frm.workDiv.value = "doSelectOne";
+		frm.mid.value = idSession;
+		frm.action = '/MAL_A/roxandrea/member.do'; 
+		frm.submit();
+	}
+	
+	//회원관리
+	function goMemberListAll(){
+		window.location.href='/MAL_A/roxandrea/member.do?workDiv=doRetrieveAdmin';
+	}
+	
+	//업체관리
+	function goStoreListAll(){
+		window.location.href='/MAL_A/roxandrea/store.do?workDiv=doRetrieveAdmin';
+	}
+	
+   //관광명소 관리
+   function goLandmarkListAll(){
+      window.location.href='/MAL_A/roxandrea/landmark.do?workDiv=doRetrieveAdmin';
+   }
+	
+</script>
+</body>
+</html>

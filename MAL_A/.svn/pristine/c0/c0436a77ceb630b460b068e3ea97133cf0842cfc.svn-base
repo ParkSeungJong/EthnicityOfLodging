@@ -1,0 +1,61 @@
+2020-02-25 19:03:09,352 DEBUG [main] cmn.ConnectionMaker (ConnectionMaker.java:71)     - 1.connection=oracle.jdbc.driver.T4CConnection@555590
+2020-02-25 19:03:09,356 DEBUG [main] board.BoardDao    (BoardDao.java:306)     - 1.connection=oracle.jdbc.driver.T4CConnection@555590
+2020-02-25 19:03:09,356 DEBUG [main] board.BoardDao    (BoardDao.java:309)     - 2.query=
+SELECT *                                                     
+FROM(                                                        
+    SELECT  rnum num,                                        
+         b.bno,                                              
+         b.title,                                            
+         b.cnt,                                              
+         b.cont,                                             
+         get_code('VIEWS',b.views) views,                    
+         b.regid,                                            
+         DECODE( TO_CHAR(b.regdt,'YYYY/MM/DD')               
+                 ,TO_CHAR(SYSDATE,'YYYY/MM/DD')              
+                 ,TO_CHAR(b.regdt,'HH24:MI')                 
+                 ,TO_CHAR(b.regdt,'YYYY/MM/DD')              
+         ) regdt,                                            
+         b.modid,                                            
+         DECODE( TO_CHAR(b.moddt,'YYYY/MM/DD')               
+                 ,TO_CHAR(SYSDATE,'YYYY/MM/DD')              
+                 ,TO_CHAR(b.moddt,'HH24:MI')                 
+                 ,TO_CHAR(b.moddt,'YYYY/MM/DD')              
+         ) moddt,                                            
+         b.fileid                                            
+    FROM (                                                   
+        SELECT ROWNUM as rnum,A.*                            
+        FROM(                                                
+            SELECT t1.*                                      
+            FROM board t1                                    
+            --검색어                                                                 	   
+ WHERE 	t1.views = 1 		  
+ AND t1.title like '%'||?||'%' 	  
+            ORDER BY t1.regdt DESC                           
+        )A                                                   
+        WHERE rownum <=(?*(?-1)+?) 						   
+    )B                                                       
+    WHERE rnum >=(?*(?-1)+1)               				   
+    )							               				   
+CROSS JOIN                                                   
+(                                                            
+    SELECT COUNT(*) TOTAL                                    
+    FROM board t1                                            
+ WHERE 	t1.views = 1 		  
+ AND t1.title like '%'||?||'%' 	  
+)                                                            
+
+2020-02-25 19:03:09,418 DEBUG [main] board.BoardDao    (BoardDao.java:311)     - 3.pstmt=oracle.jdbc.driver.OraclePreparedStatementWrapper@5a8e6209
+2020-02-25 19:03:09,420 DEBUG [main] board.BoardDao    (BoardDao.java:312)     - 4. param=SearchVO [searchDiv=1, searchWord=낙, searchWord02=null, searchWord03=null, searchWord04=null, searchWord05=null, searchWord06=null, toString()=DTO [pageSize=10, pageNum=1, total=0, num=0]]
+2020-02-25 19:03:09,442 DEBUG [main] board.BoardDao    (BoardDao.java:374)     - 4. return=[BoardVO [bno=13, title=낙곱새13, cont=내용쓸거더럽게없음13, cnt=12, views=비정지, regId=park12, regDt=2020/03/16, modId=null, modDt=null, fileId=20200202_53, toString()=DTO [pageSize=0, pageNum=0, total=13, num=1]], BoardVO [bno=12, title=낙곱새12, cont=내용쓸거더럽게없음12, cnt=11, views=비정지, regId=park12, regDt=2020/03/15, modId=null, modDt=null, fileId=20200202_52, toString()=DTO [pageSize=0, pageNum=0, total=13, num=2]], BoardVO [bno=11, title=낙곱새11, cont=내용쓸거더럽게없음11, cnt=10, views=비정지, regId=park11, regDt=2020/03/14, modId=null, modDt=null, fileId=20200202_51, toString()=DTO [pageSize=0, pageNum=0, total=13, num=3]], BoardVO [bno=10, title=낙곱새10, cont=내용쓸거더럽게없음10, cnt=9, views=비정지, regId=park10, regDt=2020/03/13, modId=null, modDt=null, fileId=20200202_50, toString()=DTO [pageSize=0, pageNum=0, total=13, num=4]], BoardVO [bno=9, title=낙곱새09, cont=내용쓸거더럽게없음09, cnt=8, views=비정지, regId=park08, regDt=2020/03/12, modId=null, modDt=null, fileId=20200202_49, toString()=DTO [pageSize=0, pageNum=0, total=13, num=5]], BoardVO [bno=8, title=낙곱새08, cont=내용쓸거더럽게없음08, cnt=7, views=비정지, regId=park08, regDt=2020/03/11, modId=null, modDt=null, fileId=20200202_48, toString()=DTO [pageSize=0, pageNum=0, total=13, num=6]], BoardVO [bno=7, title=낙곱새07, cont=내용쓸거더럽게없음07, cnt=6, views=비정지, regId=park07, regDt=2020/03/10, modId=null, modDt=null, fileId=20200202_47, toString()=DTO [pageSize=0, pageNum=0, total=13, num=7]], BoardVO [bno=6, title=낙곱새06, cont=내용쓸거더럽게없음06, cnt=5, views=비정지, regId=park04, regDt=2020/03/07, modId=null, modDt=null, fileId=20200202_46, toString()=DTO [pageSize=0, pageNum=0, total=13, num=8]], BoardVO [bno=5, title=낙곱새05, cont=내용쓸거더럽게없음05, cnt=4, views=비정지, regId=park04, regDt=2020/03/06, modId=park04, modDt=2020/03/07, fileId=20200202_45, toString()=DTO [pageSize=0, pageNum=0, total=13, num=9]], BoardVO [bno=4, title=낙곱새04, cont=내용쓸거더럽게없음04, cnt=3, views=비정지, regId=park04, regDt=2020/03/05, modId=park04, modDt=2020/03/06, fileId=20200202_44, toString()=DTO [pageSize=0, pageNum=0, total=13, num=10]]]
+2020-02-25 19:03:09,445 DEBUG [main] board.BoardTestMain (BoardTestMain.java:145)     - ************************************************
+2020-02-25 19:03:09,445 DEBUG [main] board.BoardTestMain (BoardTestMain.java:148)     - BoardVO [bno=13, title=낙곱새13, cont=내용쓸거더럽게없음13, cnt=12, views=비정지, regId=park12, regDt=2020/03/16, modId=null, modDt=null, fileId=20200202_53, toString()=DTO [pageSize=0, pageNum=0, total=13, num=1]]
+2020-02-25 19:03:09,446 DEBUG [main] board.BoardTestMain (BoardTestMain.java:148)     - BoardVO [bno=12, title=낙곱새12, cont=내용쓸거더럽게없음12, cnt=11, views=비정지, regId=park12, regDt=2020/03/15, modId=null, modDt=null, fileId=20200202_52, toString()=DTO [pageSize=0, pageNum=0, total=13, num=2]]
+2020-02-25 19:03:09,446 DEBUG [main] board.BoardTestMain (BoardTestMain.java:148)     - BoardVO [bno=11, title=낙곱새11, cont=내용쓸거더럽게없음11, cnt=10, views=비정지, regId=park11, regDt=2020/03/14, modId=null, modDt=null, fileId=20200202_51, toString()=DTO [pageSize=0, pageNum=0, total=13, num=3]]
+2020-02-25 19:03:09,446 DEBUG [main] board.BoardTestMain (BoardTestMain.java:148)     - BoardVO [bno=10, title=낙곱새10, cont=내용쓸거더럽게없음10, cnt=9, views=비정지, regId=park10, regDt=2020/03/13, modId=null, modDt=null, fileId=20200202_50, toString()=DTO [pageSize=0, pageNum=0, total=13, num=4]]
+2020-02-25 19:03:09,446 DEBUG [main] board.BoardTestMain (BoardTestMain.java:148)     - BoardVO [bno=9, title=낙곱새09, cont=내용쓸거더럽게없음09, cnt=8, views=비정지, regId=park08, regDt=2020/03/12, modId=null, modDt=null, fileId=20200202_49, toString()=DTO [pageSize=0, pageNum=0, total=13, num=5]]
+2020-02-25 19:03:09,446 DEBUG [main] board.BoardTestMain (BoardTestMain.java:148)     - BoardVO [bno=8, title=낙곱새08, cont=내용쓸거더럽게없음08, cnt=7, views=비정지, regId=park08, regDt=2020/03/11, modId=null, modDt=null, fileId=20200202_48, toString()=DTO [pageSize=0, pageNum=0, total=13, num=6]]
+2020-02-25 19:03:09,446 DEBUG [main] board.BoardTestMain (BoardTestMain.java:148)     - BoardVO [bno=7, title=낙곱새07, cont=내용쓸거더럽게없음07, cnt=6, views=비정지, regId=park07, regDt=2020/03/10, modId=null, modDt=null, fileId=20200202_47, toString()=DTO [pageSize=0, pageNum=0, total=13, num=7]]
+2020-02-25 19:03:09,446 DEBUG [main] board.BoardTestMain (BoardTestMain.java:148)     - BoardVO [bno=6, title=낙곱새06, cont=내용쓸거더럽게없음06, cnt=5, views=비정지, regId=park04, regDt=2020/03/07, modId=null, modDt=null, fileId=20200202_46, toString()=DTO [pageSize=0, pageNum=0, total=13, num=8]]
+2020-02-25 19:03:09,446 DEBUG [main] board.BoardTestMain (BoardTestMain.java:148)     - BoardVO [bno=5, title=낙곱새05, cont=내용쓸거더럽게없음05, cnt=4, views=비정지, regId=park04, regDt=2020/03/06, modId=park04, modDt=2020/03/07, fileId=20200202_45, toString()=DTO [pageSize=0, pageNum=0, total=13, num=9]]
+2020-02-25 19:03:09,447 DEBUG [main] board.BoardTestMain (BoardTestMain.java:148)     - BoardVO [bno=4, title=낙곱새04, cont=내용쓸거더럽게없음04, cnt=3, views=비정지, regId=park04, regDt=2020/03/05, modId=park04, modDt=2020/03/06, fileId=20200202_44, toString()=DTO [pageSize=0, pageNum=0, total=13, num=10]]
+2020-02-25 19:03:09,447 DEBUG [main] board.BoardTestMain (BoardTestMain.java:150)     - ************************************************

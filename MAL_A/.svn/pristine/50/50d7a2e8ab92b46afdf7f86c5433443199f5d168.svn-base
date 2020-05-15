@@ -1,0 +1,82 @@
+<%--
+  /**
+  * Class Name : 
+  * Description : 
+  * Modification Information
+  *
+  *   수정일                                         수정자                      수정내용
+  *  -------                  --------    ---------------------------
+  *  2020. 3. 11. 오후 3:48:57   sist         최초 생성
+  *
+  * author 쌍용교육센터 E반
+  * since 2009.01.06
+  *
+  * Copyright (C) 2009 by KandJang  All right reserved.
+  */
+--%>
+<%@page import="com.mal_a.cmn.StringUtil"%>
+<%@ page language="java" contentType="text/html; charset=UTF-8"
+    pageEncoding="UTF-8"%>
+<%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
+<%@ taglib prefix="fmt" uri="http://java.sun.com/jsp/jstl/fmt" %>
+<!DOCTYPE html>
+<html>
+<head>
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.2/jquery.min.js"></script>
+<meta charset="UTF-8">
+<title>Insert title here</title>
+</head>
+<body>
+	<h2>파일 업로드</h2>
+	<hr/>
+	
+	<form action="/MAL_A/roxandrea/fileMng.do" method="post" id="uploadForm" name="uploadForm" encType="multipart/form-data">
+		<label for="fileName01">파일</label>
+		<input type="file" name="fileName" id="fileName" /><br/>
+		<input type="button" value="확인" id="btn-upload">
+		<input type="button" value="취소" onclick="javascript:closeWin();">
+	</form>
+	
+	<script src="<c:url  value='/js/bootstrap.min.js' />"> </script>
+	
+	<script type="text/javascript">
+		$('#btn-upload').on('click', function () { 
+			console.log('btn-upload'); 
+	     	var form = new FormData(document.getElementById('uploadForm')); 
+	     	//alert($("#fileName").val());
+	     	if($("#fileName").val().length==0 || $("#fileName").val()==""){
+	     		alert("파일을 선택해주세요.");
+	     		return;
+	     	}else{
+	     		//ajax
+				$.ajax(
+	       			{   url: "/MAL_A/roxandrea/fileMng.do", 
+	        			dataType: 'json', 
+	        			data:form,
+	        			type: 'POST', 
+	        			processData: false, 
+	        			contentType: false,
+	        			success: function (response) {
+	         				//alert(response);
+	         				/*
+	         				for(var i in response){
+	         					alert(response[i]);
+	         				}
+	         				*/
+	         				window.opener.setChildValue(response[0], response[1], response[2], response[3], response[4], response[5]);//window.팝업call화면에.setChildValue()
+	         				window.self.close();//창닫기
+	         			}, 
+	        			error: function (jqXHR) { 
+	         				console.log('error'); 
+	        			} 
+	       			}
+		       	);//--ajax
+	     	}
+		});
+	
+		function closeWin(){
+			window.self.close();//창닫기
+		}
+	</script>
+</body>
+</html>

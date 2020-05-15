@@ -1,0 +1,396 @@
+<%--
+  /**
+  * Class Name : 
+  * Description : 
+  * Modification Information
+  *
+  *   수정일                                         수정자                      수정내용
+  *  -------                  --------    ---------------------------
+  *  2020. 3. 10. 오전 9:08:29   sist         최초 생성
+  *
+  * author 쌍용교육센터 E반
+  * since 2009.01.06
+  *
+  * Copyright (C) 2009 by KandJang  All right reserved.
+  */
+--%>
+<%@page import="com.mal_a.cmn.StringUtil"%>
+<%@page import="com.mal_a.cmn.SearchVO"%>
+<%@page import="com.mal_a.member.MemberVO"%>
+<%@page import="java.util.List"%>
+<%@ page language="java" contentType="text/html; charset=UTF-8"
+    pageEncoding="UTF-8"%>
+<%@ include file="/cmn/common.jsp" %>
+<%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
+<%@ taglib prefix="fmt" uri="http://java.sun.com/jsp/jstl/fmt" %>
+<c:url value="/roxandrea/member.do" var="logOut">
+ <c:param name="workDiv" value="doLogout"></c:param>	
+</c:url>
+
+<c:url value="/roxandrea/member.do" var="myPage">
+ <c:param name="workDiv" value="doSelectOne"></c:param>
+</c:url>
+
+<c:url value="/roxandrea/board.do" var="hrUrl">
+ <c:param name="workDiv" value="doAdminRetrieve"></c:param>
+</c:url>
+<%
+	//param
+	String searchDiv  = "";//검색구분
+	String searchWord = "";//검색어
+	String pageNum 	  = "1";//페이지 넘버
+	String pageSize   = "10";//페이지 사이즈
+	
+	SearchVO inVO = (SearchVO)request.getAttribute("paramVO");
+	if(inVO!=null){
+		LOG.debug("===============");
+		LOG.debug("=inVO="+inVO);
+		LOG.debug("===============");
+		searchDiv = inVO.getSearchDiv();
+		searchWord = inVO.getSearchWord();
+		pageNum = String.valueOf(inVO.getPageNum());
+		pageSize = String.valueOf(inVO.getPageSize());
+	}
+	
+	List<MemberVO> memberList = (List<MemberVO>)request.getAttribute("memberList");
+	/*
+	for(BoardVO vo :list) {
+		//out.print(vo+"<br>");
+	}
+	*/
+	
+	//paging
+	int maxNum			= 0;//총글수
+	int currPageNo		= 1;//현재 페이지
+	int rowsPerPage		= 10;//page
+	
+	int bottomCount		= 10;//바닥 page_cnt
+	
+	String url			= HR_PATH+"/roxandrea/member.do";//호출 URL
+	String scriptName 	= "doSearchPage";//JavaScript 함수: doSearchPage(url, no)
+	
+	if(inVO!=null){
+		maxNum = (Integer)request.getAttribute("totalCnt");
+		currPageNo 	  = inVO.getPageNum();
+		rowsPerPage   = inVO.getPageSize();
+		
+		LOG.debug("===============");
+		LOG.debug("=url="+url);
+		LOG.debug("=scriptName="+scriptName);
+		LOG.debug("=maxNum="+maxNum);
+		LOG.debug("=currPageNo="+currPageNo);
+		LOG.debug("=rowsPerPage="+rowsPerPage);
+		LOG.debug("===============");
+	}
+	//--paging
+%>
+<!DOCTYPE html>
+<html>
+<head>
+<script src="https://code.jquery.com/jquery-2.2.4.js"></script>
+<title>숙박의 민족 - MAL_A</title>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+    
+	<link href="https://fonts.googleapis.com/css?family=Poppins:200,300,400,500,600,700" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css?family=Playfair+Display:400,400i,700,700i" rel="stylesheet">
+
+    <link rel="stylesheet" href="css/open-iconic-bootstrap.min.css">
+    <link rel="stylesheet" href="css/animate.css">
+    
+    <link rel="stylesheet" href="css/owl.carousel.min.css">
+    <link rel="stylesheet" href="css/owl.theme.default.min.css">
+    <link rel="stylesheet" href="css/magnific-popup.css">
+
+    <link rel="stylesheet" href="css/aos.css">
+
+    <link rel="stylesheet" href="css/ionicons.min.css">
+
+    <link rel="stylesheet" href="css/bootstrap-datepicker.css">
+    <link rel="stylesheet" href="css/jquery.timepicker.css">
+    
+    <link rel="stylesheet" href="css/flaticon.css">
+    <link rel="stylesheet" href="css/icomoon.css">
+    <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+	<nav class="navbar navbar-expand-lg navbar-dark ftco_navbar bg-dark ftco-navbar-light" id="ftco-navbar">
+		<div class="container">
+			<a class="navbar-brand" href="admin_main.jsp">숙박의민족</a>
+			<button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#ftco-nav" aria-controls="ftco-nav" aria-expanded="false" aria-label="Toggle navigation">
+				<span class="oi oi-menu"></span> Menu
+	      	</button>
+			<div class="collapse navbar-collapse" id="ftco-nav">
+				<ul class="navbar-nav ml-auto">
+					<li class="nav-item"><a href="/MAL_A/roxandrea/admin_store_search.jsp" class="nav-link">업체검색</a></li>
+			        <li class="nav-item"><a href="javascript:goStoreListAll();" class="nav-link">업체관리</a></li>
+			        <li class="nav-item"><a href="javascript:goLandmarkListAll()" class="nav-link">관광명소관리</a></li>
+			        <li class="nav-item"><a href="${hrUrl}" class="nav-link">자유게시판관리</a></li>
+			        <li class="nav-item"><a href="javascript:goMemberListAll();" class="nav-link">회원관리</a></li>
+			        <li class="nav-item"><a href="${myPage}" class="nav-link">마이페이지</a></li>
+			        <li class="nav-item"><a href="${logOut}" class="nav-link" onclick="if(false == confirm('로그아웃 하시겠습니까?')){return false;}">로그아웃</a></li>
+	        	</ul>
+	      	</div>
+		</div>
+	</nav>
+    <!-- END nav -->
+    
+	<div class="hero-wrap" style="background-image: url('images/bg_1.jpg');">
+		<div class="overlay"></div>
+		<div class="container">
+			<div class="row no-gutters slider-text d-flex align-itemd-end justify-content-center">
+          		<div class="col-md-9 ftco-animate text-center d-flex align-items-end justify-content-center">
+          			<div class="text">
+	            		<p class="breadcrumbs mb-2"><span>MANAGEMENT</span></p>
+	            		<h1 class="mb-4 bread">MEMEBER MANAGEMENT</h1>
+            		</div>
+          		</div>
+        	</div>
+		</div>
+	</div>
+	
+	<section class="ftco-section">
+	
+		
+		<form action="/MAL_A/roxandrea/member.do" name="searchFrm" id="searchFrm" method="get">
+			<input type="hidden" name="workDiv" />
+			<input type="hidden" name="pageNum" />
+			<input type="hidden" name="views" />
+		
+	        <div class="container">
+				<div class="row justify-content-center mb-5 pb-3">
+	          		<div class="col-md-13 heading-section text-center ftco-animate">
+	          			<input  type="button"  value="정지" id="updateStopBtn" />
+	          			<input  type="button"  value="정지해제" id="updateStopReleseBtn" />
+	          			<table class="table table-hover" id="listTable">
+							<thead>
+								<tr>
+									<th>체크</th>
+									<th>번호</th>
+									<th>ID</th>
+									<th>PW</th>
+									<th>이름</th>
+									<th>이메일</th>
+									<th>생일</th>
+									<th>성별</th>
+									<th>전화번호</th>
+									<th>포인트</th>
+									<th>권한</th>
+									<th>정지상태</th>
+									<!--  <th style="display:none;">SEQ</th>  -->
+								</tr>
+							</thead>
+							<tbody>
+								<c:choose>
+									<c:when test="${null!=memberList && memberList.size()>0 }">
+										<c:forEach var="vo" items="${memberList }" >
+											<tr>
+												<td><input type="radio" value="${vo.mid }" name="radioBtn"/></td>
+												<td><c:out value="${vo.num }" /></td>
+												<td><c:out value="${vo.mid }" /></td>
+												<td><c:out value="${vo.pw }" /></td>
+												<td><c:out value="${vo.name }" /></td>
+												<td><c:out value="${vo.email }" /></td>
+												<td><c:out value="${vo.birth }" /></td>
+												<td><c:out value="${vo.gender }" /></td>
+												<td><c:out value="${vo.tel }" /></td>
+												<td><c:out value="${vo.point }" /></td>
+												<td><c:out value="${vo.autho }" /></td>
+												<td><c:out value="${vo.views }" /></td>
+											</tr> 
+										</c:forEach>
+									</c:when>
+									<c:otherwise>
+										<tr>
+											<td colspan="99">No data found</td>
+										</tr>
+									</c:otherwise>
+								</c:choose>
+							</tbody>
+						</table>
+						
+						<!-- paging -->	
+						<div>
+							<%=StringUtil.renderPaging(maxNum, currPageNo, rowsPerPage, bottomCount, url, scriptName) %>
+						</div>
+						<!-- //paging -->
+	          		</div>
+	          	</div>
+	        </div>
+	        
+        </form>
+      
+    </section>
+
+<%@ include file="/cmn/footer.jsp" %>
+    
+  
+
+  <!-- loader -->
+  <div id="ftco-loader" class="show fullscreen"><svg class="circular" width="48px" height="48px"><circle class="path-bg" cx="24" cy="24" r="22" fill="none" stroke-width="4" stroke="#eeeeee"/><circle class="path" cx="24" cy="24" r="22" fill="none" stroke-width="4" stroke-miterlimit="10" stroke="#F96D00"/></svg></div>
+
+
+  <script src="js/jquery.min.js"></script>
+  <script src="js/jquery-migrate-3.0.1.min.js"></script>
+  <script src="js/popper.min.js"></script>
+  <script src="js/bootstrap.min.js"></script>
+  <script src="js/jquery.easing.1.3.js"></script>
+  <script src="js/jquery.waypoints.min.js"></script>
+  <script src="js/jquery.stellar.min.js"></script>
+  <script src="js/owl.carousel.min.js"></script>
+  <script src="js/jquery.magnific-popup.min.js"></script>
+  <script src="js/aos.js"></script>
+  <script src="js/jquery.animateNumber.min.js"></script>
+  <script src="js/jquery.mb.YTPlayer.min.js"></script>
+  <script src="js/bootstrap-datepicker.js"></script>
+  <!-- // <script src="js/jquery.timepicker.min.js"></script> -->
+  <script src="js/scrollax.min.js"></script>
+  <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyBVWaKrjvy3MaE7SQ74_uJiULgl1JY0H2s&sensor=false"></script>
+  <script src="js/google-map.js"></script>
+  <script src="js/main.js"></script>
+    
+  </body>
+  <script type="text/javascript">
+	//회원관리
+	function goMemberListAll(){
+		history.go(0);
+	}
+	
+	//업체관리
+	function goStoreListAll(){
+		window.location.href='/MAL_A/roxandrea/store.do?workDiv=doRetrieveAdmin';
+	}
+  
+   //관광명소 관리
+   function goLandmarkListAll(){
+      window.location.href='/MAL_A/roxandrea/landmark.do?workDiv=doRetrieveAdmin';
+   }
+	
+  	function doSearchPage(url, no){
+		//console.log("url:"+url);
+		//console.log("no:"+no);
+		var frm = document.searchFrm;
+		frm.workDiv.value = "doRetrieveAdmin";
+		frm.pageNum.value = no;
+		frm.action = url;
+		frm.submit();
+	}
+  	
+  	//정지
+  	$("#updateStopBtn").on('click', function(){
+		var rowData = new Array();
+		var tdArr = new Array();
+		var radio = $("input[name=radioBtn]:checked");
+		
+		radio.each(function(i){
+			var tr = radio.parent().parent().eq(i);
+			var td = tr.children();
+			
+			rowData.push(tr.text());
+			
+			var tMid = td.eq(2).text();
+			var tViews = td.eq(11).text();
+			
+			tdArr.push(tMid);
+			tdArr.push(tViews);
+		});
+		var mid = tdArr[0];
+		var views = tdArr[1];
+		
+		if(views=="정지"){
+			alert('이미 정지 상태입니다.');
+			return;
+		}else {
+			if(false==confirm('회원아이디: '+mid+' 을(를)\n정지 하시겠습니까?'))return;
+		}
+		
+		//ajax
+		$.ajax({
+		    type:"POST",
+		    url:"/MAL_A/roxandrea/member.do",
+		    dataType:"html", 
+		    data:{"workDiv":"doUpdateViews",
+		    	  "views":"2",
+		    	  "mid":mid
+		    },
+		    success:function(data){ //성공
+				console.log("data="+data);
+				//alert("data:"+data);
+				var jData = JSON.parse(data);
+				//성공
+				if(jData!=null && jData.msgId=="1"){
+					alert(jData.msgContents);
+					history.go();
+				}else{
+					alert(jData.msgId+"||"+jData.msgContents);
+				}
+		    },
+		    error:function(xhr,status,error){
+				alert("error:"+error);
+		    },
+		    complete:function(data){
+		    
+		    }   
+	  	});//--ajax
+  	});
+  	
+  	//정지해제
+  	$("#updateStopReleseBtn").on('click', function(){
+		var rowData = new Array();
+		var tdArr = new Array();
+		var radio = $("input[name=radioBtn]:checked");
+		
+		radio.each(function(i){
+			var tr = radio.parent().parent().eq(i);
+			var td = tr.children();
+			
+			rowData.push(tr.text());
+			
+			var tMid = td.eq(2).text();
+			var tViews = td.eq(11).text();
+			
+			tdArr.push(tMid);
+			tdArr.push(tViews);
+		});
+		var mid = tdArr[0];
+		var views = tdArr[1];
+		
+		if(views=="비정지"){
+			alert('이미 비정지 상태입니다.');
+			return;
+		}else{
+			if(false==confirm('회원아이디: '+mid+' 을(를)\n정지 해제 하시겠습니까?'))return;
+		}
+		
+		//ajax
+		$.ajax({
+		    type:"POST",
+		    url:"/MAL_A/roxandrea/member.do",
+		    dataType:"html", 
+		    data:{"workDiv":"doUpdateViews",
+		    	  "views":"1",
+		    	  "mid":mid
+		    },
+		    success:function(data){ //성공
+				console.log("data="+data);
+				//alert("data:"+data);
+				var jData = JSON.parse(data);
+				//성공
+				if(jData!=null && jData.msgId=="1"){
+					alert(jData.msgContents);
+					history.go();
+				}else{
+					alert(jData.msgId+"||"+jData.msgContents);
+				}
+		    },
+		    error:function(xhr,status,error){
+				alert("error:"+error);
+		    },
+		    complete:function(data){
+		    
+		    }   
+	  	});//--ajax
+  	});
+  	
+  </script>
+</html>

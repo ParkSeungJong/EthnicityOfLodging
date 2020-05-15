@@ -1,0 +1,626 @@
+<%--
+  /**
+  * Class Name : 
+  * Description : 
+  * Modification Information
+  *
+  *   수정일                   수정자                      수정내용
+  *  -------    --------    ------------------
+  *  2020. 3. 9.       WH           최초 생성
+  *
+  * author 실행환경 개발팀
+  * since 2009.01.06
+  *
+  * Copyright (C) 2009 by KandJang  All right reserved.
+  */
+--%>
+<%@page import="com.mal_a.filemng.FileMngVO"%>
+<%@ page language="java" contentType="text/html; charset=UTF-8"
+    errorPage="/cmn/error.jsp"
+    pageEncoding="UTF-8"%>    
+<%@ include file="/cmn/common.jsp" %>
+<%@ taglib  prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>    
+<%@ taglib  prefix="fmt" uri="http://java.sun.com/jsp/jstl/fmt" %>
+<%@ taglib  prefix="fn" uri="http://java.sun.com/jsp/jstl/functions" %>   
+
+<%@page import="com.mal_a.cmn.StringUtil"%>
+<%@page import="com.mal_a.code.CodeVO"%>
+<%@page import="com.mal_a.cmn.SearchVO"%>
+<%@page import="com.mal_a.comments.CommentsVO"%>
+<%@page import="com.mal_a.comments.CommentsCont"%>
+<%@page import="java.util.List"%>  
+<%
+//req.setAttribute("list", list);//목록
+//req.setAttribute("paramVO", inVO);//param
+//req.setAttribute("totalCnt", totalCnt);
+    //param
+    String pageNum    ="1";//페이지 넘버
+    String searchDiv  = "";//검색구분
+    String searchWord ="";//검색어
+    String pageSize   ="10";//페이지 사이즈
+
+    SearchVO inVO= (SearchVO)request.getAttribute("paramVO");
+    if(null !=inVO){
+        LOG.debug("===========");
+        LOG.debug("=inVO="+inVO);
+        LOG.debug("===========");
+        pageNum    = String.valueOf(inVO.getPageNum());
+        searchDiv  = inVO.getSearchDiv();
+        searchWord = inVO.getSearchWord();
+        pageSize   = String.valueOf(inVO.getPageSize());
+    }
+    
+    //code
+    List<CodeVO> searchList =  (List<CodeVO>)request.getAttribute("searchList");
+    /*
+    for(CodeVO vo :searchList) {
+        //out.print(vo+"<br>");
+    }
+    */
+    
+    List<CodeVO> pageSizeList = (List<CodeVO>)request.getAttribute("pageSizeList");
+    /*
+    for(CodeVO vo :pageSizeList) {
+        out.print(vo+"<br>");
+    }
+    */
+    
+    
+    
+    List<CommentsVO> commentList = (List<CommentsVO>)request.getAttribute("commentList");
+    /*
+    for(BoardVO vo :list) {
+        //out.print(vo+"<br>");
+    }
+    */
+    //paging
+    int maxNum     = 0;//총글수 
+    int currPageNo = 1;//현재 페이지 
+    int rowsPerPage= 10;// pageSize 
+    
+    int bottomCount= 10;// 바닥 page_cnt
+    
+    String url = HR_PATH+"/roxandrea/comments.do";//호출 URL 
+    String scriptName = "doSearchPage";//JavaScript함수: doSearchPage(url,no)
+    if(null !=inVO){
+        maxNum     = (Integer)request.getAttribute("totalCnt");
+        currPageNo = inVO.getPageNum();
+        rowsPerPage= inVO.getPageSize();
+        
+        LOG.debug("=======================");
+        LOG.debug("url="+url);
+        LOG.debug("scriptName="+scriptName);
+        LOG.debug("maxNum="+maxNum);
+        LOG.debug("currPageNo="+currPageNo);
+        LOG.debug("rowsPerPage="+rowsPerPage);
+        LOG.debug("=======================");
+    }
+    
+    
+    //--paging
+	
+    //첨부파일
+    List<FileMngVO> outListFileMng = (List<FileMngVO>)request.getAttribute("outListFileMng");
+
+%>
+
+<c:url value="/roxandrea/member.do" var="myPage">
+ <c:param name="workDiv" value="doSelectOne"></c:param>
+</c:url>
+
+<c:url value="/roxandrea/board.do" var="hrUrl">
+ <c:param name="workDiv" value="doAdminRetrieve"></c:param>
+</c:url>
+
+<c:url value="/roxandrea/member.do" var="logOut">
+ <c:param name="workDiv" value="doLogout"></c:param>    
+</c:url>
+
+   
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+  <script  src="https://code.jquery.com/jquery-2.2.4.js"></script>
+    <title>숙박의 민족 - MAL_A</title>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+    
+    <link href="https://fonts.googleapis.com/css?family=Poppins:200,300,400,500,600,700" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css?family=Playfair+Display:400,400i,700,700i" rel="stylesheet">
+
+    <link rel="stylesheet" href="css/open-iconic-bootstrap.min.css">
+    <link rel="stylesheet" href="css/animate.css">
+    
+    <link rel="stylesheet" href="css/owl.carousel.min.css">
+    <link rel="stylesheet" href="css/owl.theme.default.min.css">
+    <link rel="stylesheet" href="css/magnific-popup.css">
+
+    <link rel="stylesheet" href="css/aos.css">
+
+    <link rel="stylesheet" href="css/ionicons.min.css">
+
+    <link rel="stylesheet" href="css/bootstrap-datepicker.css">
+    <link rel="stylesheet" href="css/jquery.timepicker.css">
+
+    
+    <link rel="stylesheet" href="css/flaticon.css">
+    <link rel="stylesheet" href="css/icomoon.css">
+    <link rel="stylesheet" href="css/style.css">
+  </head>
+  <body>
+
+    <nav class="navbar navbar-expand-lg navbar-dark ftco_navbar bg-dark ftco-navbar-light" id="ftco-navbar">
+        <div class="container">
+          <a class="navbar-brand" href="admin_main.jsp">숙박의민족</a>
+          <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#ftco-nav" aria-controls="ftco-nav" aria-expanded="false" aria-label="Toggle navigation">
+            <span class="oi oi-menu"></span> Menu
+          </button>
+
+          <div class="collapse navbar-collapse" id="ftco-nav">
+            <ul class="navbar-nav ml-auto">
+            <li class="nav-item"><a href="/MAL_A/roxandrea/admin_store_search.jsp" class="nav-link">업체검색</a></li>
+            <li class="nav-item"><a href="javascript:goStoreListAll();" class="nav-link">업체관리</a></li>
+             <li class="nav-item"><a href="javascript:goLandmarkListAll()" class="nav-link">관광명소관리</a></li>
+            <li class="nav-item"><a href="${hrUrl}" class="nav-link">자유게시판관리</a></li>
+            <li class="nav-item"><a href="javascript:goMemberListAll();" class="nav-link">회원관리</a></li>
+            <li class="nav-item"><a href="${myPage}" class="nav-link">마이페이지</a></li>
+            <li class="nav-item"><a href="${logOut}" class="nav-link" onclick="if(false == confirm('로그아웃 하시겠습니까?')){return false;}">로그아웃</a></li>
+              
+            </ul>
+          </div>
+        </div>
+      </nav>
+    <!-- END nav -->
+        <div class="hero-wrap" style="background-image: url('images/bg_1.jpg');">
+      <div class="overlay"></div>
+      <div class="container">
+        <div class="row no-gutters slider-text d-flex align-itemd-end justify-content-center">
+          <div class="col-md-9 ftco-animate text-center d-flex align-items-end justify-content-center">
+            <div class="text">
+                <h1 class="mb-4 bread">게시판</h1>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+<section class="ftco-section ftco-menu" >
+   <div class="container">
+       <div class="row justify-content-center mb-5 pb-3">
+          <div class="col-md-7 heading-section text-center ftco-animate">
+            <span class="subheading">게시판 수정/삭제</span>
+            <h2></h2>
+          </div>
+        </div>
+        
+        <div class="col-md-17">
+         
+            <div class="container">  
+                <!-- div title --> 
+                <div class="page-header">
+                   <h2>게시글 수정</h2>
+                </div> 
+                <div class="row text-right">
+                    <label for="title" class="col-lg-2 col-md-2 col-sm-2 col-xs-2 control-label"></label>
+                    <div class="col-lg-10 col-md-10 col-sm-10 col-xs-10">
+                        <input  type="button"  class="btn btn-default btn-sm"  value="목록" id="toListBtn" />
+                        <input  type="button"  class="btn btn-default btn-sm"  value="수정" id="updateBtn" />
+                        <input  type="button"  class="btn btn-default btn-sm"  value="삭제" id="deleteBtn" />
+                    </div>
+                </div>  
+                
+                
+                <form name="insert_frm"  class="form-horizontal"  action='<%=HR_PATH %>/roxandrea/board.do'  method="post">
+                    <input type="hidden" name="workDiv"  id="workDiv" />
+                    <input type="hidden" name="seq"  id="seq" value="${vo.bno}" />
+                    <div class="form-group">
+                        <label for="title" class="col-lg-2 col-md-2 col-sm-2 col-xs-2 control-label">제목</label>
+                        <div class="col-lg-10 col-md-10 col-sm-10 col-xs-10">
+                            <input type="text" placeholder="제목" class="form-control" value="${vo.title}" name="title" id="title" size="20"  />
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label for="title" class="col-lg-2 col-md-2 col-sm-2 col-xs-2 control-label">작성자</label>
+                        <div class="col-lg-10 col-md-10 col-sm-10 col-xs-10">
+                            <input type="text" placeholder="작성자" class="form-control" value="${vo.regId }" name="regId" id="regId" size="20"  readonly/>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label for="title" class="col-lg-2 col-md-2 col-sm-2 col-xs-2 control-label">조회수</label>
+                        <div class="col-lg-10 col-md-10 col-sm-10 col-xs-10">
+                            <input type="text"  class="form-control"  placeholder="조회수" value="${vo.cnt }" name="read_cnt" id="read_cnt" size="20" readonly/>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label for="title" class="col-lg-2 col-md-2 col-sm-2 col-xs-2 control-label">내용</label>
+                        <div class="col-lg-10 col-md-10 col-sm-10 col-xs-10">
+                            <textarea rows="5"  class="form-control"  name="contents" id="contents" cols="40">${vo.cont }</textarea>
+                        </div>
+                    </div>
+                </form>
+            </div>    
+   </div>
+</div>
+
+		<!-- 파일 첨부 -->
+		<div class="d-md-flex mt-5 mb-5" align="center">
+			<form action="<%=HR_PATH %>/roxandrea/room.do" method="post" name="fileFrm" id="fileFrm">
+				<input type="hidden" name="fileId" id="fileId" value="${roomVO.fileId }">
+				<table>
+					<tbody>
+						<tr>
+							<td><h1>사진 첨부</h1></td>
+							<td><input type="button" onclick="javascript:centerPopup(document.fileFrm);" value="파일첨부" ></td>
+							<td><input type="button" onclick="javascript:doUploadCancle(document.fileFrm);" value="파일삭제" ></td>
+						</tr>
+					</tbody>
+				</table>
+				<table border="1" cellpadding="5" cellspacing="0" width="600">
+					<thead>
+						<tr>
+							<th>체크</th>
+							<th>파일명</th>
+						</tr>
+					</thead>
+					<tbody id="uploadTbody">
+						<c:choose>
+							<c:when test="${null!=outListFileMng && outListFileMng.size()>0 }">
+								<c:forEach var="fileMngVO" items="${outListFileMng }" >
+									<tr>
+										<td><input type="checkbox" name="fileCheck"></td>
+										<td><input type="text" name="orgNm" id="orgNm" value="${fileMngVO.orgNm }"><br/></td>
+										<td style="display:none;"><input type="hidden" name="saveNm" id="saveNm" value="${fileMngVO.saveNm }"><br/></td>
+										<td style="display:none;"><input type="hidden" name="savePath" id="savePath" value="${fileMngVO.savePath }"><br/></td>
+										<td style="display:none;"><input type="hidden" name="fileSize" id="fileSize" value="${fileMngVO.fileSize }"><br/></td>
+										<td style="display:none;"><input type="hidden" name="ext" id="ext" value="${fileMngVO.ext }"><br/></td>
+									</tr>
+								</c:forEach>
+							</c:when>
+						</c:choose>
+					</tbody>
+				</table>
+			</form>
+		</div>
+		<!-- //파일 첨부 -->
+
+    </section>
+
+   <%@ include file="/cmn/footer.jsp" %>
+    
+  
+
+  <!-- loader -->
+  <div id="ftco-loader" class="show fullscreen"><svg class="circular" width="48px" height="48px"><circle class="path-bg" cx="24" cy="24" r="22" fill="none" stroke-width="4" stroke="#eeeeee"/><circle class="path" cx="24" cy="24" r="22" fill="none" stroke-width="4" stroke-miterlimit="10" stroke="#F96D00"/></svg></div>
+
+
+  <script src="js/jquery.min.js"></script>
+  <script src="js/jquery-migrate-3.0.1.min.js"></script>
+  <script src="js/popper.min.js"></script>
+  <script src="js/bootstrap.min.js"></script>
+  <script src="js/jquery.easing.1.3.js"></script>
+  <script src="js/jquery.waypoints.min.js"></script>
+  <script src="js/jquery.stellar.min.js"></script>
+  <script src="js/owl.carousel.min.js"></script>
+  <script src="js/jquery.magnific-popup.min.js"></script>
+  <script src="js/aos.js"></script>
+  <script src="js/jquery.animateNumber.min.js"></script>
+  <script src="js/jquery.mb.YTPlayer.min.js"></script>
+  <script src="js/bootstrap-datepicker.js"></script>
+  <!-- // <script src="js/jquery.timepicker.min.js"></script> -->
+  <script src="js/scrollax.min.js"></script>
+  <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyBVWaKrjvy3MaE7SQ74_uJiULgl1JY0H2s&sensor=false"></script>
+  <script src="js/google-map.js"></script>
+  <script src="js/main.js"></script>
+  
+  <script type="text/javascript">
+  
+  
+  //회원관리
+  function goMemberListAll(){
+      window.location.href='/MAL_A/roxandrea/member.do?workDiv=doRetrieveAdmin';
+  }
+  
+  //업체관리
+  function goStoreListAll(){
+      window.location.href='/MAL_A/roxandrea/store.do?workDiv=doRetrieveAdmin';
+  }
+  
+ //관광명소 관리
+ function goLandmarkListAll(){
+    window.location.href='/MAL_A/roxandrea/landmark.do?workDiv=doRetrieveAdmin';
+ }
+  
+  
+  
+  
+	//첨부파일 선택 취소
+	function doUploadCancle(frm){
+		//alert('asd');
+		
+		//name을 가지는 checkbox 항목의 전체 개수
+		var checkCnt = $("input:checkbox[name='fileCheck']").length;
+		//alert(checkCnt);
+
+		//name을 가지는 checkbox 중 체크표시된 항목의 전체 개수
+		var checkOnCnt = $("input:checkbox[name='fileCheck']:checked").length;
+		//alert(checkOnCnt);
+		
+		if(checkOnCnt==0){
+			alert("삭제할 첨부파일이 없습니다.");
+			return;
+		}
+	 
+		//현재 체크된 체크박스의 tr삭제
+		$("input:checkbox[name='fileCheck']").each(function() {
+			if(this.checked){
+				var tr = $(this).parent().parent();
+				tr.remove().end(); // 삭제하기
+			}
+		});
+	}
+	//--파일 선택 취소
+
+	//첨부파일 팝업 콜백
+	function setChildValue(fileId, orgNm, saveNm, savePath, fileSize, ext){
+	  	//alert("child:"+name);
+	  	var frm = document.fileFrm;
+	  	
+	  	//name을 가지는 checkbox 항목의 전체 개수
+		var checkCnt = $("input:checkbox[name='fileCheck']").length;
+		//alert(checkCnt);
+		
+		var txtFileId = $("#fileId").val();
+		//alert(txtFileId);
+		
+		if(txtFileId.length==0 || txtFileId==""){
+			$("#fileId").val(fileId);
+		  	$("#uploadTbody").append(
+				"<tr>"
+				+ "<td><input type='checkbox' name='fileCheck'></td>"
+				+ "<td><input type='text' name='orgNm' id='orgNm' value="+orgNm+"><br/></td>"
+				+ "<input type='hidden' name='saveNm' id='saveNm' value="+saveNm+"><br/>"
+				+ "<input type='hidden' name='savePath' id='savePath' value="+savePath+"><br/>"
+				+ "<input type='hidden' name='fileSize' id='fileSize' value="+fileSize+"><br/>"
+				+ "<input type='hidden' name='ext' id='ext' value="+ext+"><br/></td>"
+				+ "</tr>"
+			);
+	  	}else{
+	  		//alert('asd');
+	  		$("#uploadTbody").append(
+				"<tr>"
+				+ "<td><input type='checkbox' name='fileCheck'></td>"
+				+ "<td><input type='text' name='orgNm' id='orgNm' value="+orgNm+"><br/></td>"
+				+ "<input type='hidden' name='saveNm' id='saveNm' value="+saveNm+"><br/>"
+				+ "<input type='hidden' name='savePath' id='savePath' value="+savePath+"><br/>"
+				+ "<input type='hidden' name='fileSize' id='fileSize' value="+fileSize+"><br/>"
+				+ "<input type='hidden' name='ext' id='ext' value="+ext+"><br/>"
+				+ "</tr>"
+			);
+	  	}
+	}
+	//--첨부파일 팝업 콜백
+
+	//첨부파일 팝업 출력
+	function centerPopup(frm){
+		console.log('openPopup');
+		/*
+		window.open 옵션
+		no:0
+		yes:1
+		width : 팝업창 가로길이
+		height : 팝업창 세로길이
+		toolbar=no : 단축도구창(툴바) 표시안함
+		menubar=no : 메뉴창(메뉴바) 표시안함
+		location=no : 주소창 표시안함
+		scrollbars=no : 스크롤바 표시안함
+		status=no : 아래 상태바창 표시안함
+		resizable=no : 창변형 하지않음
+		fullscreen=no : 전체화면 하지않음
+		channelmode=yes : F11 키 기능이랑 같음
+		left=0 : 왼쪽에 창을 고정(ex. left=30 이런식으로 조절)
+		top=0 : 위쪽에 창을 고정(ex. top=100 이런식으로 조절)
+		*/
+		var title ="팝업(제목)";
+		var xWidth =window.screen.width/2;
+		var xHeight =window.screen.height/2;
+		console.log('xWidth:'+xWidth);
+		console.log('xHeight:'+xHeight);
+		
+		var pX =xWidth - 240/2;
+		var pY =xHeight - 240/2;
+		console.log('pX:'+pX);
+		console.log('pY:'+pY);			
+		
+		var status  ="toolbar=0,scrollbars=no,resizable=0,status=yes,width=240,height=200,left="+pX+',top='+pY;
+		window.open("",title,status);
+		
+		frm.target = title;
+		frm.method = "get";
+		frm.action = "<c:url value='/roxandrea/file_mng_pop_up.jsp'/>";
+		frm.submit();
+	}
+	//--첨부파일 팝업 출력
+
+    //수정
+    $("#updateBtn").on("click",function(){
+        
+        //seq
+        var seq = $("#seq").val();
+        if(null ==seq || seq.trim().length ==0){
+            alert("순번을 확인 하세요.");
+            return;
+        }
+        //title
+        var title = $("#title").val();
+        if(null ==title || title.trim().length ==0){
+            $("#title").focus();
+            alert("제목을 확인 하세요.");
+            return;
+        }
+        //contents
+        var contents = $("#contents").val();
+        if(null ==contents || contents.trim().length ==0){
+            $("#contents").focus();
+            alert("내용을 확인 하세요.");
+            return;
+        }
+        
+      	//첨부파일 객체 생성
+      	var fileId = $("#fileId").val();//첨부파일 ID
+		var filePart = "4";//첨부파일 페이지 분류
+		
+		//첨부파일 배열 객체 생성
+		var orgNm = [];//첨부파일 원본명
+		var saveNm = [];//첨부파일 저장명
+		var savePath = [];//첨부파일 저장명
+		var fileSize = [];//첨부파일 사이즈
+		var ext = [];//첨부파일 확장자
+		
+		//첨부파일 배열 수 만큼 for문 돌려서 배열에 담기
+		var size = $("input[name='orgNm']").length;
+  		for(i=0;i<size;i++){
+  			orgNm.push($("input[name='orgNm']").eq(i).val());
+  			saveNm.push($("input[name='saveNm']").eq(i).val());
+  			savePath.push($("input[name='savePath']").eq(i).val());
+  			fileSize.push($("input[name='fileSize']").eq(i).val());
+  			ext.push($("input[name='ext']").eq(i).val());
+		}
+        
+        if(false==confirm(title+'을(를)\n수정하시겠습니까?'))return;
+        
+        //ajax
+        $.ajax({
+          type:"POST",
+          url:"/MAL_A/roxandrea/board.do",
+          dataType:"html", 
+          data:{"workDiv":"doUpdate",
+                "seq":$("#seq").val(),
+                "title":$("#title").val(),
+                "regId":$("#regId").val(),
+                "contents":$("#contents").val(),
+                "fileId": fileId,
+				"orgNm": orgNm,
+				"saveNm": saveNm,
+				"savePath": savePath,
+				"fileSize": fileSize,
+				"ext": ext,
+				"filePart": filePart
+          },
+          success:function(data){ //성공
+               console.log("data="+data);
+            // alert("data:"+data);
+               var jData = JSON.parse(data);
+               //성공
+               if(null !=jData && jData.msgId=="1"){
+                   alert(jData.msgContents);
+                   goRetrieve1();
+               }else{
+                   alert(jData.msgId+"||"+jData.msgContents);
+               }
+            
+            
+          },
+          error:function(xhr,status,error){
+           alert("error:"+error);
+          },
+          complete:function(data){
+          
+          }   
+        
+        });//--ajax
+        
+    });
+    
+ 
+    
+    
+
+
+    //삭제
+    $("#deleteBtn").on("click",function(){
+        //console.log("#deleteBtn");
+        var seq = $("#seq").val();
+        
+        console.log("seq="+seq);
+        if(seq == null){
+            alert("순번을 확인 하세요.");
+            return;
+        }
+        
+        if(false==confirm('삭제하시겠습니까?'))return;   
+        //ajax
+        $.ajax({
+            type:"POST",
+            url:"/MAL_A/roxandrea/board.do",
+            dataType:"html", 
+            data:{"workDiv":"doDelete",
+                  "seq":$("#seq").val()
+            },
+            success:function(data){ //성공
+               console.log("data="+data);
+               //alert("data:"+data);
+               var jData = JSON.parse(data);
+               //성공
+               if(null !=jData && jData.msgId=="1"){
+                   alert(jData.msgContents);
+                   goRetrieve();
+               }else{
+                   alert(jData.msgId+"||"+jData.msgContents);
+               }
+
+            },
+            error:function(xhr,status,error){
+             alert("error:"+error);
+            },
+            complete:function(data){
+
+            }   
+        });//--ajax     
+        
+        
+        
+    });
+
+
+    
+
+    
+    function goRetrieve(){
+        window.location.href='/MAL_A/roxandrea/board.do?workDiv=doRetrieve';
+    }
+    function goRetrieve1(){
+    	 history.go(0);
+
+    }
+
+  
+    //위에서 아래로 해석(인터프리터 방식)
+    $("#toListBtn").on('click',function(){
+        //console.log("#toListBtn");
+        goRetrieve();
+    });
+ 
+    
+    
+    
+    
+ 
+    
+    
+    $(document).ready(function(){
+        
+        //console.log("document ready");
+
+    
+    });
+    
+
+
+
+</script>   
+  
+  
+    
+  </body>
+</html>
